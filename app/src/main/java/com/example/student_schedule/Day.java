@@ -5,8 +5,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Comparator;
 import java.util.Objects;
-import com.example.student_schedule.RepeatRule;
 
 /**
  * 表示一天：包含日期、周号、周几、活动时段、当天的行程列表、重复规则等。
@@ -19,11 +19,11 @@ public class Day {
     private int activeStartHour = 8;   // 默认 8 点，单位小时，范围 [0,24]
     private int activeEndHour = 22;    // 默认 22 点
 
+    private RepeatRule repeatRule = new RepeatRule(); // 默认不重复
+    private boolean isTemporaryDay = false; // 临时的天会暂时覆盖对应的重复逻辑（只在该天生效的日期有效），注意，这个变量只控制是否有覆盖优先性，具体的重复性由RepeatRule控制
+    
     private final List<Schedule> schedules = new ArrayList<>();
 
-    // 重复相关
-    private RepeatRule repeatRule = new RepeatRule(); // 默认不重复
-    private boolean temporaryDay = false; // 临时的天会暂时覆盖对应的重复逻辑（只在特定 date 有效）
 
     public Day(LocalDate date){
         if (date == null) {
@@ -31,6 +31,16 @@ public class Day {
         }
         this.date = date;
         this.dayOfWeek = date.getDayOfWeek();
+    }
+
+    public Day(LocalDate date, boolean istemporaryDay, RepeatRule repeatRule){
+        if (date == null) {
+            throw new IllegalArgumentException("date 不能为 null");
+        }
+        this.date = date;
+        this.dayOfWeek = date.getDayOfWeek();
+        this.isTemporaryDay = istemporaryDay;
+        this.repeatRule = repeatRule;
     }
 
     public LocalDate getDate() {
@@ -74,6 +84,8 @@ public class Day {
     public void addSchedule(Schedule s){
         if(s == null) return;
         schedules.add(s);
+        // 按开始时间排序，保证当天行程按时间先后排列
+        schedules.sort(Comparator.comparingInt(Schedule::getStartTime));
     }
 
     public boolean removeSchedule(Schedule s){
@@ -89,11 +101,11 @@ public class Day {
     }
 
     public boolean isTemporaryDay() {
-        return temporaryDay;
+        return isTemporaryDay;
     }
 
     public void setTemporaryDay(boolean temporaryDay) {
-        this.temporaryDay = temporaryDay;
+        this.isTemporaryDay = temporaryDay;
     }
 
     /**
@@ -104,7 +116,7 @@ public class Day {
      */
     public boolean appearsOn(LocalDate target) {
         if (target == null) return false;
-        if (temporaryDay && date.equals(target)) return true;
+        if (isTemporaryDay && date.equals(target)) return true;
         return repeatRule.occursOn(date, target);
     }
 
