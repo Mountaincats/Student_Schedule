@@ -1,10 +1,13 @@
 package com.example.student_schedule;
 
+import java.net.http.WebSocket;
 import java.time.LocalDate;
 import java.time.DayOfWeek;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 表示一周（从周一到周日），负责管理属于这周的 Day 实例并处理是否显示某个 Day（包括重复和临时替换）。
@@ -12,14 +15,19 @@ import java.util.List;
 public class Week {
     private LocalDate monday; // 本周周一的日期
     private int weekNumber;   // 可用于显示是第几周
-    private final List<Day> days = new ArrayList<>(7); // 7 列，从周一到周日
-
-    public Week(LocalDate anyDateInWeek, int weekNumber){
+    private final List<List<Day>> allDays = new ArrayList<>(7); // 7 列，从周一到周日
+    // 创建一个周组，管理所有创建在本周组内的days
+    
+    
+    public Week(LocalDate anyDateInWeek){
+        if (anyDateInWeek == null) {
+            throw new IllegalArgumentException("anyDateInWeek 不能为 null");
+        }
         this.monday = anyDateInWeek.with(DayOfWeek.MONDAY);
-        this.weekNumber = weekNumber;
-        // 初始化占位 Day（可后续替换或向中添加行程）
-        for(int i=0;i<7;i++){
-            days.add(null);
+        this.weekNumber = 1;
+        this.allDays.clear();
+        for (int i = 0; i < 7; i++) {
+            allDays.add(new ArrayList<>());
         }
     }
 
@@ -31,21 +39,57 @@ public class Week {
         return weekNumber;
     }
 
-    public List<Day> getDays() {
-        return Collections.unmodifiableList(days);
+    public List<List<Day>> getDays() {
+        return Collections.unmodifiableList(allDays);
     }
 
     /**
-     * 将 Day 放入对应列（如果 day.date 落在本周）。
+     * 将某一天加入周组，具体的位置此函数会自动分配。
      */
-    public boolean putDay(Day day) {
-        if (day == null) return false;
-        int offset = (int) (day.getDate().getDayOfWeek().getValue() - DayOfWeek.MONDAY.getValue()); // 0..6
-        LocalDate expected = monday.plusDays(offset);
-        if (!day.getDate().equals(expected)) return false;
-        days.set(offset, day);
+    public boolean addDay(Day day) {
+        if (day == null || day.getDate() == null) return false;
+        long offset = ChronoUnit.DAYS.between(monday, day.getDate());
+        if (offset < 0 || offset > 6) return false; // 不在本周
+        allDays.get(day.getDayOfWeek().getValue() - 1).add(day);    // 把这一天放入对应的周几列
         day.setWeekIndex(weekNumber);
         return true;
+    }
+
+    /**
+     * 在当前周的指定周几添加Day（0=周一）。如果越界返回false。
+     */
+    public boolean setDayAtColumn(int columnZeroBased, boolean isTemporaryDay) {    // 需要获取用户是否需要重复(isTemporaryDay)
+        LocalDate date = monday.plusDays(columnZeroBased);  // 获取当前天的日期
+        if (columnZeroBased < 0 || columnZeroBased > 6) return false;
+        if (isTemporaryDay) {   // 临时天不重复
+            RepeatRule repeatRule = new RepeatRule();
+            Day day = new Day(date, isTemporaryDay, repeatRule);
+            addDay(day);
+        }
+
+        //// 以下内容未完成，需要先实现监听器Listener
+        // else {
+        //     // 这里需要调用监听器行为获取repeatrule相关的参数
+        //     RepeatRule.Mode mode = Listener.getRepeatMode;
+        //     int interval = Listener.getRepeatInterval;
+        //     int occurrences = Listener.getRepeatOccurrences;
+        //     RepeatRule repeatRule = new RepeatRule(mode, interval, occurrences, date);
+        //     Day day = new Day(monday.plusDays(columnZeroBased), isTemporaryDay, repeatRule);
+        //     addDay(day);
+        // }
+        return true;
+    }
+
+    /**
+     * 根据日期返回在本周对应的 Day（如果存在），否则返回 null。
+     * 该方法会优先返回已放入 days 列表的 Day；如果该列为空则返回 null（上层可通过重复规则合并）。
+     */
+    public Day getDayForDate(LocalDate date) {
+        if (date == null) return null;
+        long offset = ChronoUnit.DAYS.between(monday, date);
+        if (offset < 0 || offset > 6) return null;
+        List<Day> column = allDays.get((int) offset);
+        return column.isEmpty() ? null : column.get(0);
     }
 
     /**
@@ -53,7 +97,8 @@ public class Week {
      */
     public Day getDayAtColumn(int columnZeroBased){
         if(columnZeroBased < 0 || columnZeroBased > 6) return null;
-        return days.get(columnZeroBased);
+        List<Day> column = allDays.get(columnZeroBased);
+        return column.isEmpty() ? null : column.get(0);
     }
 
     /**
@@ -69,5 +114,18 @@ public class Week {
             if (day.appearsOn(candidate)) return candidate;
         }
         return null;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(monday);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Week week = (Week) o;
+        return Objects.equals(monday, week.monday);
     }
 }
