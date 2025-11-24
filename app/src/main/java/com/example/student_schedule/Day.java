@@ -24,7 +24,6 @@ public class Day {
     
     private final List<Schedule> schedules = new ArrayList<>();
 
-
     public Day(LocalDate date){
         if (date == null) {
             throw new IllegalArgumentException("date 不能为 null");

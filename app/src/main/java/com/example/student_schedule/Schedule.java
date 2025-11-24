@@ -8,16 +8,16 @@ public class Schedule {
     private String name;    // 名称
     private Note note;
     private int colorArgb;  // 颜色，使用 ARGB 整数表示
-    private boolean temporary; // 是否为临时行程（临时行程不会加入天的重复）
+    private boolean isTemporarySchedule; // 是否为临时行程（临时行程不会加入天的重复，并且在显示时有更高的优先级，比如说，两个行程重叠，优先显示临时行程）
 
-    public Schedule(int startTime, int endTime, String name, Note note, int colorArgb, boolean temporary){
+    public Schedule(int startTime, int endTime, String name, Note note, int colorArgb, boolean isTemporarySchedule){
         validateTimes(startTime, endTime);
         this.startTime = startTime;
         this.endTime = endTime;
         this.name = name;
         this.note = note == null ? new Note() : note;
         this.colorArgb = colorArgb;
-        this.temporary = temporary;
+        this.isTemporarySchedule = isTemporarySchedule;
     }
 
     public Schedule(int startTime, int endTime, String name){
@@ -107,21 +107,21 @@ public class Schedule {
         return colorArgb;
     }
 
-    public boolean isTemporary() {
-        return temporary;
+    public boolean isTemporarySchedule() {
+        return isTemporarySchedule;
     }
 
     public void setColorArgb(int colorArgb) {
         this.colorArgb = colorArgb;
     }
 
-    public void setTemporary(boolean temporary) {
-        this.temporary = temporary;
+    public void setTemporarySchedule(boolean temporarySchedule) {
+        this.isTemporarySchedule = temporarySchedule;
     }
 
     @Override
     public String toString() {
-        return (name == null ? "" : name + " ") + formatTime(startTime) + "-" + formatTime(endTime) + (temporary ? " (临时)" : "");
+        return (name == null ? "" : name + " ") + formatTime(startTime) + "-" + formatTime(endTime) + (isTemporarySchedule ? " (临时)" : "");
     }
 
     private static String formatTime(int minutes) {
