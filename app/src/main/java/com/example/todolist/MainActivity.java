@@ -3,13 +3,17 @@ package com.example.todolist;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 public class MainActivity extends AppCompatActivity {
-    private Button btnSettings, btnSchedule, btnTodo, btnDaily;
+    private ImageButton btnSettings;
+    private TextView btnSchedule, btnTodo, btnDaily;
     private FrameLayout contentFrame;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +28,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         btnSettings = findViewById(R.id.btnSettings);
         btnSchedule = findViewById(R.id.btnSchedule);
         btnTodo = findViewById(R.id.btnTodo);
@@ -66,33 +73,39 @@ public class MainActivity extends AppCompatActivity {
         // 清除之前的内容
         contentFrame.removeAllViews();
 
-        // 加载课表布局（暂时显示简单文本）
+        // 加载课表布局
         View scheduleView = getLayoutInflater().inflate(R.layout.layout_schedule, contentFrame, false);
         contentFrame.addView(scheduleView);
 
-        // 更新按钮状态
-        updateButtonStates(btnSchedule);
+        // 更新页签状态
+        updateTabStates(btnSchedule);
     }
 
     private void showTodoView() {
         contentFrame.removeAllViews();
         View todoView = getLayoutInflater().inflate(R.layout.layout_todo, contentFrame, false);
         contentFrame.addView(todoView);
-        updateButtonStates(btnTodo);
+        updateTabStates(btnTodo);
     }
 
     private void showDailyView() {
         contentFrame.removeAllViews();
         View dailyView = getLayoutInflater().inflate(R.layout.layout_daily, contentFrame, false);
         contentFrame.addView(dailyView);
-        updateButtonStates(btnDaily);
+        updateTabStates(btnDaily);
     }
 
-    private void updateButtonStates(Button activeButton) {
-        // 重置所有按钮状态
-        Button[] buttons = {btnSchedule, btnTodo, btnDaily};
-        for (Button btn : buttons) {
-            btn.setSelected(btn == activeButton);
+    private void updateTabStates(TextView activeTab) {
+        // 重置所有页签状态
+        TextView[] tabs = {btnSchedule, btnTodo, btnDaily};
+        for (TextView tab : tabs) {
+            tab.setSelected(tab == activeTab);
+            // 根据选中状态调整文字颜色
+            if (tab == activeTab) {
+                tab.setTextColor(getResources().getColor(android.R.color.white));
+            } else {
+                tab.setTextColor(getResources().getColor(android.R.color.black));
+            }
         }
     }
 }

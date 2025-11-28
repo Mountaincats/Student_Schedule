@@ -9,9 +9,9 @@
 
     <!-- 主界面字符串 -->
     <string name="settings">设置</string>
-    <string name="schedule">学生课表</string>
-    <string name="todo">待办任务</string>
-    <string name="daily">每日任务</string>
+    <string name="schedule_vertical">学\n生\n课\n表</string>
+    <string name="todo_vertical">待\n办\n任\n务</string>
+    <string name="daily_vertical">每\n日\n任\n务</string>
 
     <!-- 设置界面字符串 -->
     <string name="app_settings">应用设置</string>
