@@ -5,13 +5,12 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
-import java.time.LocalDate;
 import java.util.List;
 
 @Dao
 public interface ScheduleDao {
-    @Query("SELECT * FROM schedules WHERE dayDate = :date ORDER BY startTime ASC")
-    List<ScheduleEntity> getSchedulesForDate(LocalDate date);
+    @Query("SELECT * FROM schedules WHERE day_id = :dayId ORDER BY startTime ASC")
+    List<ScheduleEntity> getSchedulesForDayId(long dayId);
 
     @Insert
     void insert(ScheduleEntity schedule);
@@ -22,6 +21,6 @@ public interface ScheduleDao {
     @Delete
     void delete(ScheduleEntity schedule);
     
-    @Query("DELETE FROM schedules WHERE dayDate = :date")
-    void deleteAllSchedulesForDate(LocalDate date);
+    @Query("DELETE FROM schedules WHERE day_id = :dayId")
+    void deleteAllSchedulesForDayId(long dayId);
 }

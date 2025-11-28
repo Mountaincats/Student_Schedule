@@ -6,10 +6,11 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-@Database(entities = {ScheduleEntity.class}, version = 1, exportSchema = false)
+@Database(entities = {ScheduleEntity.class, DayEntity.class}, version = 2, exportSchema = false)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract ScheduleDao scheduleDao();
+    public abstract DayDao dayDao();
 
     private static volatile AppDatabase INSTANCE;
 
@@ -19,8 +20,8 @@ public abstract class AppDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             AppDatabase.class, "schedule_database")
-                            .fallbackToDestructiveMigration()
-                            .allowMainThreadQueries() // 简化开发，允许主线程查询
+                            .fallbackToDestructiveMigration() // 注意：这将清除旧数据！开发阶段可以使用。
+                            .allowMainThreadQueries() 
                             .build();
                 }
             }

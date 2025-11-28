@@ -1,6 +1,5 @@
 package com.example.todolist.model;
 
-//import java.net.http.WebSocket;
 import java.time.LocalDate;
 import java.time.DayOfWeek;
 import java.time.temporal.ChronoUnit;
@@ -10,15 +9,16 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 表示一周（从周一到周日），负责管理属于这周的 Day 实例并处理是否显示某个 Day（包括重复和临时替换）。
+ * 表示一周的“排课方案”或“视图”。
+ * <p>
+ * 它维护了一个二维列表（7列 x N行），每一列包含了该“星期几”所有可能的 Day 候选者（规则）。
+ * 当查询具体的日期时，它会根据 appearsOn 和优先级动态计算出应该显示哪一个 Day。
  */
 public class Week {
-    private LocalDate monday; // 本周周一的日期
+    private LocalDate monday; // 本周周一的日期（锚点，用于确定查询的具体日期范围）
     private int weekNumber;   // 可用于显示是第几周
-    private final List<List<Day>> allDays = new ArrayList<>(7); // 7 列，从周一到周日
-    // 创建一个周组，管理所有创建在本周组内的days
-    
-    
+    private final List<List<Day>> allDays = new ArrayList<>(7); // 7 列，从周一到周日。每一列可能包含多个 Day 规则。
+
     public Week(LocalDate anyDateInWeek){
         if (anyDateInWeek == null) {
             throw new IllegalArgumentException("anyDateInWeek 不能为 null");
@@ -44,74 +44,99 @@ public class Week {
     }
 
     /**
-     * 将某一天加入周组，具体的位置此函数会自动分配。
+     * 将某一天（规则）加入周组。
+     * <p>
+     * 改进：不再限制 day 的日期必须在本周内。只要它是“周一”的 Day，就放入周一的候选池。
+     * 这样可以支持添加“过去的重复规则”。
      */
     public boolean addDay(Day day) {
         if (day == null || day.getDate() == null) return false;
-        long offset = ChronoUnit.DAYS.between(monday, day.getDate());
-        if (offset < 0 || offset > 6) return false; // 不在本周
-        allDays.get(day.getDayOfWeek().getValue() - 1).add(day);    // 把这一天放入对应的周几列
-        day.setWeekIndex(weekNumber);
+        
+        // 直接根据 Day 的星期几，放入对应的列
+        int colIndex = day.getDayOfWeek().getValue() - 1; // 1=Mon -> 0
+        allDays.get(colIndex).add(day);
+        
+        // day.setWeekIndex(weekNumber); // 这一行可能需要斟酌，如果 Day 是跨周重复的，绑定特定的 weekIndex 可能会有歧义
         return true;
     }
 
     /**
-     * 在当前周的指定周几添加Day（0=周一）。如果越界返回false。
+     * 在当前周的指定周几创建并添加一个新的 Day。
      */
-    public boolean setDayAtColumn(int columnZeroBased, boolean isTemporaryDay) {    // 需要获取用户是否需要重复(isTemporaryDay)
-        LocalDate date = monday.plusDays(columnZeroBased);  // 获取当前天的日期
+    public boolean setDayAtColumn(int columnZeroBased, boolean isTemporaryDay) {
         if (columnZeroBased < 0 || columnZeroBased > 6) return false;
-        if (isTemporaryDay) {   // 临时天不重复
-            RepeatRule repeatRule = new RepeatRule();
+        
+        // 计算出这一列在本周对应的具体日期
+        LocalDate date = monday.plusDays(columnZeroBased);
+        
+        if (isTemporaryDay) {
+            RepeatRule repeatRule = new RepeatRule(); // 临时天通常不重复
             Day day = new Day(date, isTemporaryDay, repeatRule);
             addDay(day);
         }
-
-        //// 以下内容未完成，需要先实现监听器Listener
-        // else {
-        //     // 这里需要调用监听器行为获取repeatrule相关的参数
-        //     RepeatRule.Mode mode = Listener.getRepeatMode;
-        //     int interval = Listener.getRepeatInterval;
-        //     int occurrences = Listener.getRepeatOccurrences;
-        //     RepeatRule repeatRule = new RepeatRule(mode, interval, occurrences, date);
-        //     Day day = new Day(monday.plusDays(columnZeroBased), isTemporaryDay, repeatRule);
-        //     addDay(day);
-        // }
+        // TODO: 处理非临时天的逻辑 (Listener etc.)
         return true;
     }
 
     /**
-     * 根据日期返回在本周对应的 Day（如果存在），否则返回 null。
-     * 该方法会优先返回已放入 days 列表的 Day；如果该列为空则返回 null（上层可通过重复规则合并）。
+     * 核心逻辑：根据具体日期，从候选列表中选出最应该显示的 Day。
+     * 
+     * 逻辑：
+     * 1. 找到对应星期几的那一列。
+     * 2. 遍历列中所有的 Day 规则。
+     * 3. 筛选出 appearsOn(date) 为 true 的 Day。
+     * 4. 仲裁：优先返回“临时天(Temporary)”，如果没有临时天，则返回重复规则。
      */
     public Day getDayForDate(LocalDate date) {
         if (date == null) return null;
+        
+        // 简单的范围检查，虽然理论上 Week 可以处理任意日期，但通常我们只查本周
         long offset = ChronoUnit.DAYS.between(monday, date);
         if (offset < 0 || offset > 6) return null;
-        List<Day> column = allDays.get((int) offset);
-        return column.isEmpty() ? null : column.get(0);
+
+        List<Day> candidates = allDays.get((int) offset);
+        if (candidates.isEmpty()) return null;
+
+        Day bestMatch = null;
+
+        for (Day day : candidates) {
+            if (day.appearsOn(date)) {
+                // 如果还没找到匹配项，直接暂定为这个
+                if (bestMatch == null) {
+                    bestMatch = day;
+                } else {
+                    // 仲裁逻辑：临时天 > 普通重复天
+                    if (day.isTemporaryDay() && !bestMatch.isTemporaryDay()) {
+                        bestMatch = day;
+                    }
+                    // 如果都是临时天，或者都是重复天，可能需要根据创建时间或其他逻辑判断（这里暂取后添加的或保持现状）
+                }
+            }
+        }
+        return bestMatch;
     }
 
     /**
-     * 返回显示在当前周中指定列（0=周一）的 Day；如果该列为空但有重复的 Day（由外部传入），应该由上层合并逻辑决定。
+     * 获取本周第 [column] 列应该显示的 Day。
+     * 本质上是 getDayForDate 的快捷方式。
      */
     public Day getDayAtColumn(int columnZeroBased){
         if(columnZeroBased < 0 || columnZeroBased > 6) return null;
-        List<Day> column = allDays.get(columnZeroBased);
-        return column.isEmpty() ? null : column.get(0);
+        LocalDate targetDate = monday.plusDays(columnZeroBased);
+        return getDayForDate(targetDate);
     }
 
     /**
-     * 判断给定的 Day（可能来自重复规则或创建的 Day）是否应该出现在本周内某日，
-     * 并返回对应的日期（若不出现则返回 null）。
-     *
-     * 该方法不会修改内部 days 列表，只用于判断。
+     * 辅助方法：判断某个具体的 Day 规则是否在本周生效。
      */
     public LocalDate appearsInWeek(Day day) {
         if (day == null) return null;
-        for (int i = 0; i < 7; i++) {
-            LocalDate candidate = monday.plusDays(i);
-            if (day.appearsOn(candidate)) return candidate;
+        // 优化：只需要检查它对应的星期几那一天即可，不需要遍历7天
+        int col = day.getDayOfWeek().getValue() - 1;
+        LocalDate targetDate = monday.plusDays(col);
+        
+        if (day.appearsOn(targetDate)) {
+            return targetDate;
         }
         return null;
     }
