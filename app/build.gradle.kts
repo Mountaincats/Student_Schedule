@@ -28,6 +28,9 @@ android {
         }
     }
     compileOptions {
+        // 开启 Java 8+ API 脱糖支持
+        isCoreLibraryDesugaringEnabled = true
+        
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -37,6 +40,9 @@ android {
 }
 
 dependencies {
+    // 核心库脱糖依赖
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
