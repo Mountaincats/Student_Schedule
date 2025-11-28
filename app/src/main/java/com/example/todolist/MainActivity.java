@@ -3,15 +3,18 @@ package com.example.todolist;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.FrameLayout;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 public class MainActivity extends AppCompatActivity {
     private ImageButton btnSettings;
-    private TextView btnSchedule, btnTodo, btnDaily;
+
+    private Button btnSchedule, btnTodo, btnDaily;
+
     private FrameLayout contentFrame;
     private Toolbar toolbar;
 

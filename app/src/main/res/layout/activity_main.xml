@@ -47,12 +47,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:layout_marginBottom="4dp"
-                android:background="@drawable/tab_selector"
-                android:gravity="center|left"
+
+                android:background="@drawable/button_selector"
+                android:gravity="center|center"
                 android:lines="4"
                 android:minHeight="0dp"
                 android:singleLine="false"
-                android:text="@string/schedule_vertical"
+                android:text="@string/schedule"
+
                 android:textAllCaps="false" />
 
             <!-- 待办页签 -->
@@ -61,12 +63,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:layout_marginBottom="4dp"
-                android:background="@drawable/tab_selector"
-                android:gravity="center|left"
+
+                android:background="@drawable/button_selector"
+                android:gravity="center|center"
                 android:lines="4"
                 android:minHeight="0dp"
                 android:singleLine="false"
-                android:text="@string/todo_vertical"
+                android:text="@string/todo"
+
                 android:textAllCaps="false" />
 
             <!-- 每日页签 -->
@@ -74,12 +78,14 @@
                 android:id="@+id/btnDaily"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:background="@drawable/tab_selector"
-                android:gravity="center|left"
+
+                android:background="@drawable/button_selector"
+                android:gravity="center|center"
                 android:lines="4"
                 android:minHeight="0dp"
                 android:singleLine="false"
-                android:text="@string/daily_vertical"
+                android:text="@string/daily"
+
                 android:textAllCaps="false" />
 
         </LinearLayout>
