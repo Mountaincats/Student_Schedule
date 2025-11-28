@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Todo List App</string>
+    <string name="app_name">日程表</string>
 
     <!-- 锁屏界面字符串 -->
     <string name="app_locked">应用已锁定</string>
@@ -9,9 +9,9 @@
 
     <!-- 主界面字符串 -->
     <string name="settings">设置</string>
-    <string name="schedule">课表</string>
-    <string name="todo">待办</string>
-    <string name="daily">每日</string>
+    <string name="schedule">学生课表</string>
+    <string name="todo">待办任务</string>
+    <string name="daily">每日任务</string>
 
     <!-- 设置界面字符串 -->
     <string name="app_settings">应用设置</string>
