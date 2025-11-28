@@ -1,4 +1,4 @@
-package com.example.student_schedule.data;
+package com.example.todolist.data;
 
 import androidx.room.Dao;
 import androidx.room.Delete;

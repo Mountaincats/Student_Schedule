@@ -1,4 +1,4 @@
-package com.example.student_schedule.data;
+package com.example.todolist.data;
 
 import android.content.Context;
 import androidx.room.Database;

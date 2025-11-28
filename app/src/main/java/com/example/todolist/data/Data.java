@@ -1,9 +1,9 @@
-package com.example.student_schedule.data;
+package com.example.todolist.data;
 
 import android.content.Context;
-import com.example.student_schedule.model.Day;
-import com.example.student_schedule.model.Schedule;
-import com.example.student_schedule.model.Week;
+import com.example.todolist.model.Day;
+import com.example.todolist.model.Schedule;
+import com.example.todolist.model.Week;
 import java.time.LocalDate;
 import java.util.List;
 
