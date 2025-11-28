@@ -4,12 +4,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.FrameLayout;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 public class MainActivity extends AppCompatActivity {
-    private Button btnSettings, btnSchedule, btnTodo, btnDaily;
+    private ImageButton btnSettings;
+    private Button btnSchedule, btnTodo, btnDaily;
     private FrameLayout contentFrame;
+
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         btnSettings = findViewById(R.id.btnSettings);
         btnSchedule = findViewById(R.id.btnSchedule);
         btnTodo = findViewById(R.id.btnTodo);
