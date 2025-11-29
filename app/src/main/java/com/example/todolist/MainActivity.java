@@ -170,8 +170,8 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
             public void onClick(DialogInterface dialog, int which) {
                 String taskContent = input.getText().toString().trim();
                 if (!taskContent.isEmpty()) {
-                    int newTaskId = dailyTaskManager.getNextTaskId();
-                    DailyTask newTask = new DailyTask(newTaskId, taskContent);
+                    // 使用-1作为临时ID，数据库会生成真正的ID
+                    DailyTask newTask = new DailyTask(-1, taskContent);
                     dailyTaskManager.addTask(newTask);
                     dailyTaskAdapter.notifyItemInserted(0);
                 }
