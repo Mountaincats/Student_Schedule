@@ -14,10 +14,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.todolist.adapter.DailyTaskAdapter;
+import com.example.todolist.data.DailyTaskManager;
 import com.example.todolist.model.DailyTask;
-
-import java.util.ArrayList; // 确保这个导入存在
-import java.util.Calendar;  // 添加这个导入
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.OnTaskClickListener {
@@ -29,17 +27,20 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     // 每日任务相关
     private RecyclerView dailyTasksRecyclerView;
     private DailyTaskAdapter dailyTaskAdapter;
+    private DailyTaskManager dailyTaskManager;
     private List<DailyTask> dailyTaskList;
-    private int taskIdCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // 初始化数据管理器
+        dailyTaskManager = new DailyTaskManager(this);
+        dailyTaskList = dailyTaskManager.getDailyTasks();
+
         initViews();
         setupClickListeners();
-        initDailyTasks();
 
         // 默认显示课表界面
         showScheduleView();
@@ -54,14 +55,6 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         btnTodo = findViewById(R.id.btnTodo);
         btnDaily = findViewById(R.id.btnDaily);
         contentFrame = findViewById(R.id.contentFrame);
-
-        // 初始化每日任务列表
-        dailyTaskList = new ArrayList<>();
-    }
-
-    private void initDailyTasks() {
-        // 这里可以添加一些示例任务用于测试
-        // dailyTaskList.add(new DailyTask(taskIdCounter++, "示例任务"));
     }
 
     private void setupClickListeners() {
@@ -143,15 +136,7 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
 
     @Override
     public void onTaskCompleteClick(DailyTask task, boolean completed) {
-        task.setCompletedToday(completed);
-
-        // 如果是完成，记录到当前周
-        if (completed) {
-            Calendar calendar = Calendar.getInstance();
-            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1; // 周日=0, 周一=1, ...
-            task.markCompleted(0, dayOfWeek); // 0表示当前周
-        }
-
+        dailyTaskManager.markTaskCompleted(task, completed);
         dailyTaskAdapter.notifyDataSetChanged();
     }
 
@@ -173,8 +158,9 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
             public void onClick(DialogInterface dialog, int which) {
                 String taskContent = input.getText().toString().trim();
                 if (!taskContent.isEmpty()) {
-                    DailyTask newTask = new DailyTask(taskIdCounter++, taskContent);
-                    dailyTaskList.add(0, newTask); // 修复：在索引0处添加新任务
+                    int newTaskId = dailyTaskManager.getNextTaskId();
+                    DailyTask newTask = new DailyTask(newTaskId, taskContent);
+                    dailyTaskManager.addTask(newTask);
                     dailyTaskAdapter.notifyItemInserted(0);
                 }
             }
@@ -194,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
             public void onClick(DialogInterface dialog, int which) {
                 int position = dailyTaskList.indexOf(task);
                 if (position != -1) {
-                    dailyTaskList.remove(position);
+                    dailyTaskManager.deleteTask(task);
                     dailyTaskAdapter.notifyItemRemoved(position);
                 }
             }
@@ -202,5 +188,14 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
 
         builder.setNegativeButton("取消", null);
         builder.show();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // 保存数据
+        if (dailyTaskManager != null) {
+            dailyTaskManager.saveData();
+        }
     }
 }
