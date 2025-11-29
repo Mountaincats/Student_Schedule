@@ -94,24 +94,12 @@ public class DailyTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             weekIndicatorLayout = itemView.findViewById(R.id.weekIndicatorLayout);
 
             completionCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                System.out.println("=== CheckBox onChange START ===");
-                System.out.println("isChecked: " + isChecked);
-
                 if (listener != null) {
                     int position = getAdapterPosition();
-                    System.out.println("Adapter position: " + position);
-
                     if (position != RecyclerView.NO_POSITION && position < taskList.size()) {
-                        System.out.println("Calling onTaskCompleteClick");
                         listener.onTaskCompleteClick(taskList.get(position), isChecked);
-                    } else {
-                        System.out.println("ERROR: Invalid position - " + position);
                     }
-                } else {
-                    System.out.println("ERROR: Listener is null");
                 }
-
-                System.out.println("=== CheckBox onChange END ===");
             });
 
             deleteButton.setOnClickListener(v -> {

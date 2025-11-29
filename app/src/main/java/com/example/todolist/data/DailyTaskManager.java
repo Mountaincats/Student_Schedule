@@ -32,64 +32,37 @@ public class DailyTaskManager {
     }
 
     // 加载数据
-// 加载数据
     private void loadData() {
-        System.out.println("=== DailyTaskManager.loadData START ===");
-
         String tasksJson = prefs.getString(KEY_TASKS, "[]");
         taskIdCounter = prefs.getInt(KEY_TASK_ID_COUNTER, 0);
-        System.out.println("Loaded JSON: " + tasksJson);
-        System.out.println("Task ID counter: " + taskIdCounter);
 
         try {
             JSONArray tasksArray = new JSONArray(tasksJson);
-            System.out.println("Number of tasks in JSON: " + tasksArray.length());
-
             for (int i = 0; i < tasksArray.length(); i++) {
-                System.out.println("Processing task at index: " + i);
                 JSONObject taskJson = tasksArray.getJSONObject(i);
                 DailyTask task = DailyTask.fromJson(taskJson);
                 dailyTaskList.add(task);
-                System.out.println("Added task ID: " + task.getId());
             }
         } catch (JSONException e) {
-            System.out.println("ERROR in loadData JSON: " + e.getMessage());
-            e.printStackTrace();
-        } catch (Exception e) {
-            System.out.println("ERROR in loadData: " + e.getMessage());
             e.printStackTrace();
         }
-
-        System.out.println("=== DailyTaskManager.loadData END ===");
     }
 
     // 保存数据
-// 保存数据
     public void saveData() {
-        System.out.println("=== DailyTaskManager.saveData START ===");
-        System.out.println("Number of tasks to save: " + dailyTaskList.size());
-
         try {
             JSONArray tasksArray = new JSONArray();
             for (DailyTask task : dailyTaskList) {
-                System.out.println("Processing task ID: " + task.getId());
                 tasksArray.put(task.toJson());
             }
 
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString(KEY_TASKS, tasksArray.toString());
             editor.putInt(KEY_TASK_ID_COUNTER, taskIdCounter);
-            boolean success = editor.commit(); // 使用commit而不是apply，以便立即看到结果
-            System.out.println("Save to SharedPreferences successful: " + success);
+            editor.apply();
         } catch (JSONException e) {
-            System.out.println("ERROR in saveData JSON: " + e.getMessage());
-            e.printStackTrace();
-        } catch (Exception e) {
-            System.out.println("ERROR in saveData: " + e.getMessage());
             e.printStackTrace();
         }
-
-        System.out.println("=== DailyTaskManager.saveData END ===");
     }
 
     // 检查并重置每日任务状态
@@ -169,44 +142,19 @@ public class DailyTaskManager {
     }
 
     // 标记任务完成
-// 标记任务完成
     public void markTaskCompleted(DailyTask task, boolean completed) {
-        System.out.println("=== DailyTaskManager.markTaskCompleted START ===");
-        System.out.println("Task ID: " + task.getId());
-        System.out.println("Completed: " + completed);
-
         task.setCompletedToday(completed);
-        System.out.println("setCompletedToday executed");
 
         if (completed) {
             // 设置完成日期
-            String currentDate = getCurrentDate();
-            System.out.println("Current date: " + currentDate);
-            task.setLastCompletedDate(currentDate);
-            System.out.println("setLastCompletedDate executed");
+            task.setLastCompletedDate(getCurrentDate());
 
             // 记录到当前周
             Calendar calendar = Calendar.getInstance();
             int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1; // 周日=0, 周一=1, ...
-            System.out.println("Day of week: " + dayOfWeek);
-
-            try {
-                task.markCompleted(0, dayOfWeek);
-                System.out.println("markCompleted executed for week 0, day " + dayOfWeek);
-            } catch (Exception e) {
-                System.out.println("ERROR in markCompleted: " + e.getMessage());
-                e.printStackTrace();
-            }
+            task.markCompleted(0, dayOfWeek);
         }
 
-        try {
-            updateTask(task);
-            System.out.println("updateTask executed successfully");
-        } catch (Exception e) {
-            System.out.println("ERROR in updateTask: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        System.out.println("=== DailyTaskManager.markTaskCompleted END ===");
+        updateTask(task);
     }
 }
