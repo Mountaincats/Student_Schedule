@@ -5,27 +5,29 @@
     android:orientation="vertical">
 
     <!-- 顶部工具栏 -->
+
+    <!-- 主体内容区域 -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
-        android:theme="?attr/actionBarTheme"
-        android:minHeight="?attr/actionBarSize">
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme">
 
         <!-- 设置按钮放在工具栏左侧 -->
         <ImageButton
             android:id="@+id/btnSettings"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_menu_preferences"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/settings"
-            android:padding="12dp" />
+            android:layout_gravity="end"
+            android:padding="12dp"
+            android:src="@android:drawable/ic_menu_preferences" />
 
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- 主体内容区域 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
