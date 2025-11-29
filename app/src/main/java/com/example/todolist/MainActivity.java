@@ -136,8 +136,20 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
 
     @Override
     public void onTaskCompleteClick(DailyTask task, boolean completed) {
-        dailyTaskManager.markTaskCompleted(task, completed);
-        dailyTaskAdapter.notifyDataSetChanged();
+//        dailyTaskManager.markTaskCompleted(task, completed);
+//        dailyTaskAdapter.notifyDataSetChanged();
+
+        try {
+            dailyTaskManager.markTaskCompleted(task, completed);
+        } catch (Exception e) {
+            return; // 如果出错，提前返回
+        }
+
+        try {
+            dailyTaskAdapter.notifyDataSetChanged();
+        } catch (Exception ignored) {
+
+        }
     }
 
     @Override

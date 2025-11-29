@@ -43,8 +43,7 @@ public class DailyTaskManager {
                 DailyTask task = DailyTask.fromJson(taskJson);
                 dailyTaskList.add(task);
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } catch (JSONException ignored) {
         }
     }
 
@@ -60,8 +59,7 @@ public class DailyTaskManager {
             editor.putString(KEY_TASKS, tasksArray.toString());
             editor.putInt(KEY_TASK_ID_COUNTER, taskIdCounter);
             editor.apply();
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } catch (JSONException ignored) {
         }
     }
 
@@ -152,9 +150,17 @@ public class DailyTaskManager {
             // 记录到当前周
             Calendar calendar = Calendar.getInstance();
             int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1; // 周日=0, 周一=1, ...
-            task.markCompleted(0, dayOfWeek);
-        }
 
+            task.markCompleted(0, dayOfWeek);
+//            try {
+//                task.markCompleted(0, dayOfWeek);
+//            } catch (Exception ignored) {
+//            }
+        }
         updateTask(task);
+//        try {
+//            updateTask(task);
+//        } catch (Exception ignored) {
+//        }
     }
 }
