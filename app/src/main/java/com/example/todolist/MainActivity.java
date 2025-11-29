@@ -14,11 +14,15 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.todolist.adapter.DailyTaskAdapter;
+import com.example.todolist.adapter.TodoAdapter;
 import com.example.todolist.data.DailyTaskManager;
+import com.example.todolist.data.TodoManager;
 import com.example.todolist.model.DailyTask;
+import com.example.todolist.model.TodoTask;
+
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.OnTaskClickListener {
+public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.OnTaskClickListener, TodoAdapter.OnTodoTaskClickListener {
     private ImageButton btnSettings;
     private Button btnSchedule, btnTodo, btnDaily;
     private FrameLayout contentFrame;
@@ -30,6 +34,12 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     private DailyTaskManager dailyTaskManager;
     private List<DailyTask> dailyTaskList;
 
+    // 待办事项相关变量
+    private RecyclerView todoTasksRecyclerView;
+    private TodoAdapter todoAdapter;
+    private TodoManager todoManager;
+    private List<TodoTask> todoTaskList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +48,10 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         // 初始化数据管理器
         dailyTaskManager = new DailyTaskManager(this);
         dailyTaskList = dailyTaskManager.getDailyTasks();
+
+        // 初始化待办事项数据管理器
+        todoManager = new TodoManager(this);
+        todoTaskList = todoManager.getTodoTasks();
 
         initViews();
         setupClickListeners();
@@ -100,6 +114,9 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         View todoView = getLayoutInflater().inflate(R.layout.layout_todo, contentFrame, false);
         contentFrame.addView(todoView);
         updateTabStates(btnTodo);
+
+        // 初始化待办事项RecyclerView
+        initTodoRecyclerView(todoView);
     }
 
     private void showDailyView() {
@@ -119,6 +136,15 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         dailyTasksRecyclerView.setLayoutManager(layoutManager);
         dailyTasksRecyclerView.setAdapter(dailyTaskAdapter);
+    }
+
+    private void initTodoRecyclerView(View todoView) {
+        todoTasksRecyclerView = todoView.findViewById(R.id.todoTasksRecyclerView);
+        todoAdapter = new TodoAdapter(todoTaskList, this);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        todoTasksRecyclerView.setLayoutManager(layoutManager);
+        todoTasksRecyclerView.setAdapter(todoAdapter);
     }
 
     private void updateTabStates(Button activeTab) {
@@ -194,6 +220,69 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
                 if (position != -1) {
                     dailyTaskManager.deleteTask(task);
                     dailyTaskAdapter.notifyItemRemoved(position);
+                }
+            }
+        });
+
+        builder.setNegativeButton("取消", null);
+        builder.show();
+    }
+
+    // TodoAdapter接口实现
+    @Override
+    public void Todo_onAddTaskClick() {
+        showAddTodoDialog();
+    }
+
+    @Override
+    public void Todo_onMoveUpClick(TodoTask task) {
+        todoManager.moveTaskUp(task);
+        todoAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void Todo_onDeleteClick(TodoTask task) {
+        showDeleteTodoConfirmationDialog(task);
+    }
+
+    private void showAddTodoDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("添加待办事项");
+
+        final EditText input = new EditText(this);
+        input.setHint("请输入待办内容");
+        input.setMinLines(3);
+        input.setGravity(View.TEXT_ALIGNMENT_TEXT_START);
+        builder.setView(input);
+
+        builder.setPositiveButton("添加", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String taskContent = input.getText().toString().trim();
+                if (!taskContent.isEmpty()) {
+                    TodoTask newTask = new TodoTask(-1, taskContent);
+                    todoManager.addTask(newTask);
+                    todoAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+
+        builder.setNegativeButton("取消", null);
+        builder.show();
+    }
+
+    private void showDeleteTodoConfirmationDialog(final TodoTask task) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("确认删除");
+        builder.setMessage("确定要删除这个待办事项吗？");
+
+        builder.setPositiveButton("删除", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                int position = todoTaskList.indexOf(task);
+                if (position != -1) {
+                    todoManager.deleteTask(task);
+                    todoAdapter.notifyItemRemoved(position);
                 }
             }
         });
