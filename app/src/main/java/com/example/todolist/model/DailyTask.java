@@ -27,15 +27,22 @@ public class DailyTask {
 
     // 从JSON对象创建DailyTask
     public static DailyTask fromJson(JSONObject json) throws JSONException {
+        System.out.println("=== DailyTask.fromJson START ===");
+
         int id = json.getInt("id");
         String content = json.getString("content");
+        System.out.println("Creating task ID: " + id + ", Content: " + content);
+
         DailyTask task = new DailyTask(id, content);
         task.setCompletedToday(json.getBoolean("completedToday"));
         task.setLastCompletedDate(json.getString("lastCompletedDate"));
+        System.out.println("Basic properties set");
 
         // 解析weeklyCompletion
         JSONArray weeksArray = json.getJSONArray("weeklyCompletion");
         List<int[]> weeklyCompletion = new ArrayList<>();
+        System.out.println("Weekly completion array length: " + weeksArray.length());
+
         for (int i = 0; i < weeksArray.length(); i++) {
             JSONArray weekArray = weeksArray.getJSONArray(i);
             int[] week = new int[7];
@@ -43,19 +50,24 @@ public class DailyTask {
                 week[j] = weekArray.getInt(j);
             }
             weeklyCompletion.add(week);
+            System.out.println("Added week " + i + " data");
         }
         task.setWeeklyCompletion(weeklyCompletion);
 
+        System.out.println("=== DailyTask.fromJson END ===");
         return task;
     }
 
     // 将DailyTask转换为JSON对象
     public JSONObject toJson() throws JSONException {
+        System.out.println("=== DailyTask.toJson START ===");
+
         JSONObject json = new JSONObject();
         json.put("id", id);
         json.put("content", content);
         json.put("completedToday", completedToday);
         json.put("lastCompletedDate", lastCompletedDate);
+        System.out.println("Basic properties added to JSON");
 
         JSONArray weeksArray = new JSONArray();
         for (int[] week : weeklyCompletion) {
@@ -66,7 +78,9 @@ public class DailyTask {
             weeksArray.put(weekArray);
         }
         json.put("weeklyCompletion", weeksArray);
+        System.out.println("Weekly completion data added to JSON");
 
+        System.out.println("=== DailyTask.toJson END ===");
         return json;
     }
 
@@ -83,12 +97,25 @@ public class DailyTask {
 
     // 标记某天完成
     public void markCompleted(int weekIndex, int dayOfWeek) {
+        System.out.println("=== DailyTask.markCompleted START ===");
+        System.out.println("Week index: " + weekIndex + ", Day of week: " + dayOfWeek);
+        System.out.println("Weekly completion size: " + weeklyCompletion.size());
+
         if (weekIndex >= 0 && weekIndex < weeklyCompletion.size()) {
             int[] week = weeklyCompletion.get(weekIndex);
+            System.out.println("Week array length: " + week.length);
+
             if (dayOfWeek >= 0 && dayOfWeek < 7) {
                 week[dayOfWeek]++;
+                System.out.println("Marked completed. New value: " + week[dayOfWeek]);
+            } else {
+                System.out.println("ERROR: Invalid day of week: " + dayOfWeek);
             }
+        } else {
+            System.out.println("ERROR: Invalid week index: " + weekIndex);
         }
+
+        System.out.println("=== DailyTask.markCompleted END ===");
     }
 
     // 获取某周的完成次数

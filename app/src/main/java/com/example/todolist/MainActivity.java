@@ -35,15 +35,20 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        System.out.println("=== MainActivity.onCreate START ===");
+
         // 初始化数据管理器
         dailyTaskManager = new DailyTaskManager(this);
         dailyTaskList = dailyTaskManager.getDailyTasks();
+        System.out.println("Daily task list size: " + dailyTaskList.size());
 
         initViews();
         setupClickListeners();
 
         // 默认显示课表界面
         showScheduleView();
+
+        System.out.println("=== MainActivity.onCreate END ===");
     }
 
     private void initViews() {
@@ -136,8 +141,29 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
 
     @Override
     public void onTaskCompleteClick(DailyTask task, boolean completed) {
-        dailyTaskManager.markTaskCompleted(task, completed);
-        dailyTaskAdapter.notifyDataSetChanged();
+        System.out.println("=== MainActivity.onTaskCompleteClick START ===");
+        System.out.println("Task ID: " + task.getId());
+        System.out.println("Task Content: " + task.getContent());
+        System.out.println("Completed: " + completed);
+
+        try {
+            dailyTaskManager.markTaskCompleted(task, completed);
+            System.out.println("markTaskCompleted executed successfully");
+        } catch (Exception e) {
+            System.out.println("ERROR in markTaskCompleted: " + e.getMessage());
+            e.printStackTrace();
+            return; // 如果出错，提前返回
+        }
+
+        try {
+            dailyTaskAdapter.notifyDataSetChanged();
+            System.out.println("notifyDataSetChanged executed successfully");
+        } catch (Exception e) {
+            System.out.println("ERROR in notifyDataSetChanged: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        System.out.println("=== MainActivity.onTaskCompleteClick END ===");
     }
 
     @Override
@@ -193,9 +219,16 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     @Override
     protected void onPause() {
         super.onPause();
+        System.out.println("=== MainActivity.onPause START ===");
+
         // 保存数据
         if (dailyTaskManager != null) {
+            System.out.println("Saving data on pause");
             dailyTaskManager.saveData();
+        } else {
+            System.out.println("ERROR: dailyTaskManager is null");
         }
+
+        System.out.println("=== MainActivity.onPause END ===");
     }
 }
