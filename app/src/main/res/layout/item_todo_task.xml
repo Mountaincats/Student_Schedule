@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:orientation="horizontal"
+    android:background="@drawable/todo_task_background"
+    android:padding="16dp"
+    android:gravity="center_vertical">
+
+    <!-- 左边：序号 -->
+    <TextView
+        android:id="@+id/todoTaskNumber"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:text="1"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:background="@drawable/todo_number_background"
+        android:textColor="@color/white" />
+
+    <!-- 中间：任务内容 -->
+    <TextView
+        android:id="@+id/todoTaskContent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="任务内容"
+        android:textSize="16sp"
+        android:maxLines="3"
+        android:ellipsize="end"
+        android:lineSpacingExtra="4dp" />
+
+    <!-- 右边：操作按钮 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <!-- 上移按钮 -->
+        <Button
+            android:id="@+id/todoUpButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="↑"
+            android:textSize="16sp"
+            android:background="@drawable/todo_up_button_background"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 删除按钮 -->
+        <Button
+            android:id="@+id/todoDeleteButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="×"
+            android:textSize="20sp"
+            android:background="@drawable/delete_button_background" />
+
+    </LinearLayout>
+
+</LinearLayout>
