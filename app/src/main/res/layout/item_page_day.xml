@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@android:color/white"
+    android:layout_margin="4dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical">
+
+        <RelativeLayout
+            android:id="@+id/dayScheduleContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="20dp">
+
+            <!-- 这里的内容（时间刻度、课程块）将在 Adapter 中动态添加 -->
+            <!-- 比如： -->
+            <!-- <TextView text="08:00" ... /> -->
+            <!-- <CardView ... /> -->
+            
+            <!-- 我们可以预置一条左侧的分割线 -->
+            <View
+                android:id="@+id/timeline_guide"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="#E0E0E0"
+                android:layout_marginStart="50dp" 
+                android:layout_alignParentTop="true"
+                android:layout_alignParentBottom="true"/>
+
+        </RelativeLayout>
+    </ScrollView>
+
+</androidx.cardview.widget.CardView>

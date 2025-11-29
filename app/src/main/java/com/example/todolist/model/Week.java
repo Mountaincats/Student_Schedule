@@ -34,6 +34,18 @@ public class Week {
     public LocalDate getMonday() {
         return monday;
     }
+    
+    /**
+     * 设置当前周的起始日期（周一）。
+     * 设置后，getEffectiveDays() 返回的新列表将对应这一周。
+     * 这允许在 ViewPager 切换时复用同一个 Week 对象来渲染不同周的数据。
+     */
+    public void setMonday(LocalDate monday) {
+        if (monday == null) {
+            throw new IllegalArgumentException("monday cannot be null");
+        }
+        this.monday = monday.with(DayOfWeek.MONDAY);
+    }
 
     public int getWeekNumber() {
         return weekNumber;
@@ -41,6 +53,32 @@ public class Week {
 
     public List<List<Day>> getDays() {
         return Collections.unmodifiableList(allDays);
+    }
+    
+    /**
+     * 获取当前锚点周（this.monday 所在周）的所有有效 Day 列表 (7个)。
+     */
+    public List<Day> getEffectiveDays() {
+        return getEffectiveDays(this.monday);
+    }
+
+    /**
+     * 获取指定周（由 startOfWeek 决定）的所有有效 Day 列表。
+     * 哪怕 startOfWeek 不是本周，此方法也能正确根据规则返回那一周应该显示的课程。
+     */
+    public List<Day> getEffectiveDays(LocalDate startOfWeek) {
+        if (startOfWeek == null) return new ArrayList<>();
+        LocalDate start = startOfWeek.with(DayOfWeek.MONDAY);
+        
+        List<Day> result = new ArrayList<>(7);
+        for (int i = 0; i < 7; i++) {
+            LocalDate date = start.plusDays(i);
+            Day effectiveDay = getDayForDate(date);
+            
+            // 如果当天没有匹配的 Day，可以选择返回 null 或者一个空的 Day (取决于上层 UI 怎么处理)
+            result.add(effectiveDay);
+        }
+        return result;
     }
 
     /**
@@ -80,21 +118,17 @@ public class Week {
 
     /**
      * 核心逻辑：根据具体日期，从候选列表中选出最应该显示的 Day。
-     * 
-     * 逻辑：
-     * 1. 找到对应星期几的那一列。
-     * 2. 遍历列中所有的 Day 规则。
-     * 3. 筛选出 appearsOn(date) 为 true 的 Day。
-     * 4. 仲裁：优先返回“临时天(Temporary)”，如果没有临时天，则返回重复规则。
+     * <p>
+     * 改进：现在支持查询任意日期，不再局限于本周 (this.monday)。
+     * 它会根据日期的星期几，去对应的规则列查找，并判断 appearsOn。
      */
     public Day getDayForDate(LocalDate date) {
         if (date == null) return null;
         
-        // 简单的范围检查，虽然理论上 Week 可以处理任意日期，但通常我们只查本周
-        long offset = ChronoUnit.DAYS.between(monday, date);
-        if (offset < 0 || offset > 6) return null;
-
-        List<Day> candidates = allDays.get((int) offset);
+        // 使用 DayOfWeek 计算列索引 (Monday=1 -> 0, Sunday=7 -> 6)
+        int colIndex = date.getDayOfWeek().getValue() - 1;
+        
+        List<Day> candidates = allDays.get(colIndex);
         if (candidates.isEmpty()) return null;
 
         Day bestMatch = null;
@@ -109,7 +143,7 @@ public class Week {
                     if (day.isTemporaryDay() && !bestMatch.isTemporaryDay()) {
                         bestMatch = day;
                     }
-                    // 如果都是临时天，或者都是重复天，可能需要根据创建时间或其他逻辑判断（这里暂取后添加的或保持现状）
+                    // 如果都是临时天，或者都是重复天，可能需要根据创建时间或其他逻辑判断
                 }
             }
         }
@@ -118,7 +152,6 @@ public class Week {
 
     /**
      * 获取本周第 [column] 列应该显示的 Day。
-     * 本质上是 getDayForDate 的快捷方式。
      */
     public Day getDayAtColumn(int columnZeroBased){
         if(columnZeroBased < 0 || columnZeroBased > 6) return null;
