@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="120dp"
+    android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:background="@drawable/todo_task_background"
     android:padding="16dp"
@@ -10,8 +10,8 @@
     <!-- 左边：序号 -->
     <TextView
         android:id="@+id/todoTaskNumber"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:gravity="center"
         android:text="1"
         android:textSize="18sp"
@@ -29,7 +29,6 @@
         android:layout_marginEnd="16dp"
         android:text="任务内容"
         android:textSize="16sp"
-        android:maxLines="3"
         android:ellipsize="end"
         android:lineSpacingExtra="4dp" />
 
@@ -43,8 +42,8 @@
         <!-- 上移按钮 -->
         <Button
             android:id="@+id/todoUpButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:text="↑"
             android:textSize="16sp"
             android:background="@drawable/todo_up_button_background"
@@ -53,8 +52,8 @@
         <!-- 删除按钮 -->
         <Button
             android:id="@+id/todoDeleteButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:text="×"
             android:textSize="20sp"
             android:background="@drawable/delete_button_background" />
