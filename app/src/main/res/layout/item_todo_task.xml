@@ -11,11 +11,11 @@
     <!-- 序号 -->
     <TextView
         android:id="@+id/todoTaskNumber"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:gravity="center"
         android:text="1"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:background="@drawable/todo_number_background"
         android:textColor="@color/white" />
