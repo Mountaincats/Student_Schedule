@@ -71,8 +71,8 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    // 移动项目
-    public void onItemMove(int fromPosition, int toPosition) {
+    // 直接移动项目到指定位置
+    public void onItemMoveDirectly(int fromPosition, int toPosition) {
         if (fromPosition < toPosition) {
             for (int i = fromPosition; i < toPosition; i++) {
                 Collections.swap(taskList, i, i + 1);
@@ -83,7 +83,10 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
         }
         notifyItemMoved(fromPosition, toPosition);
+    }
 
+    // 拖拽完成后的回调
+    public void onDragCompleted() {
         // 更新优先级
         updatePriorities();
     }
@@ -170,6 +173,6 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public interface OnTodoTaskClickListener {
         void Todo_onAddTaskClick();
         void Todo_onDeleteClick(TodoTask task);
-        void Todo_onPriorityChange(List<TodoTask> tasks); // 新增回调，当优先级改变时
+        void Todo_onPriorityChange(List<TodoTask> tasks);
     }
 }

@@ -5,6 +5,7 @@
     android:orientation="horizontal"
     android:background="@drawable/todo_task_background"
     android:padding="16dp"
+    android:foreground="@drawable/todo_item_selector"
     android:gravity="center_vertical">
 
     <!-- 序号 -->
