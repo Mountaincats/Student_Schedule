@@ -7,17 +7,18 @@
     android:padding="16dp"
     android:gravity="center_vertical">
 
-    <!-- 左边：序号 -->
+    <!-- 序号 -->
     <TextView
         android:id="@+id/todoTaskNumber"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:gravity="center"
         android:text="1"
         android:textSize="18sp"
         android:textStyle="bold"
         android:background="@drawable/todo_number_background"
         android:textColor="@color/white" />
+
 
     <!-- 中间：任务内容 -->
     <TextView
@@ -32,31 +33,29 @@
         android:ellipsize="end"
         android:lineSpacingExtra="4dp" />
 
-    <!-- 右边：操作按钮 -->
+    <!-- 左边：拖拽手柄和序号 -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:gravity="center">
 
-        <!-- 上移按钮 -->
-        <Button
-            android:id="@+id/todoUpButton"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:text="↑"
-            android:textSize="16sp"
-            android:background="@drawable/todo_up_button_background"
-            android:layout_marginBottom="8dp" />
-
-        <!-- 删除按钮 -->
+        <!-- 右边：删除按钮 -->
         <Button
             android:id="@+id/todoDeleteButton"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:text="×"
             android:textSize="20sp"
             android:background="@drawable/delete_button_background" />
+
+        <!-- 拖拽手柄图标 -->
+        <ImageView
+            android:id="@+id/dragHandle"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_drag_handle"
+            android:contentDescription="拖拽手柄" />
 
     </LinearLayout>
 

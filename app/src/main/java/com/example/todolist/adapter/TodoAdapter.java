@@ -4,11 +4,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.todolist.R;
 import com.example.todolist.model.TodoTask;
+import java.util.Collections;
 import java.util.List;
 
 public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -17,10 +20,15 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<TodoTask> taskList;
     private OnTodoTaskClickListener listener;
+    private ItemTouchHelper touchHelper;
 
     public TodoAdapter(List<TodoTask> taskList, OnTodoTaskClickListener listener) {
         this.taskList = taskList;
         this.listener = listener;
+    }
+
+    public void setTouchHelper(ItemTouchHelper touchHelper) {
+        this.touchHelper = touchHelper;
     }
 
     @Override
@@ -63,6 +71,35 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
+    // 移动项目
+    public void onItemMove(int fromPosition, int toPosition) {
+        if (fromPosition < toPosition) {
+            for (int i = fromPosition; i < toPosition; i++) {
+                Collections.swap(taskList, i, i + 1);
+            }
+        } else {
+            for (int i = fromPosition; i > toPosition; i--) {
+                Collections.swap(taskList, i, i - 1);
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition);
+
+        // 更新优先级
+        updatePriorities();
+    }
+
+    // 更新所有任务的优先级
+    private void updatePriorities() {
+        for (int i = 0; i < taskList.size(); i++) {
+            taskList.get(i).setPriority(i);
+        }
+
+        // 通知优先级改变
+        if (listener != null) {
+            listener.Todo_onPriorityChange(taskList);
+        }
+    }
+
     // 添加按钮的ViewHolder
     class AddButtonViewHolder extends RecyclerView.ViewHolder {
         Button addButton;
@@ -85,25 +122,32 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     // 任务项的ViewHolder
     class TaskViewHolder extends RecyclerView.ViewHolder {
+        ImageView dragHandle;
         TextView taskNumber;
         TextView taskContent;
-        Button upButton;
         Button deleteButton;
 
         TaskViewHolder(View itemView) {
             super(itemView);
+            dragHandle = itemView.findViewById(R.id.dragHandle);
             taskNumber = itemView.findViewById(R.id.todoTaskNumber);
             taskContent = itemView.findViewById(R.id.todoTaskContent);
-            upButton = itemView.findViewById(R.id.todoUpButton);
             deleteButton = itemView.findViewById(R.id.todoDeleteButton);
 
-            upButton.setOnClickListener(v -> {
-                if (listener != null) {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION && position < taskList.size()) {
-                        listener.Todo_onMoveUpClick(taskList.get(position));
-                    }
+            // 设置拖拽手柄的长按监听
+            dragHandle.setOnLongClickListener(v -> {
+                if (touchHelper != null) {
+                    touchHelper.startDrag(this);
                 }
+                return true;
+            });
+
+            // 整个项目也可以长按拖拽
+            itemView.setOnLongClickListener(v -> {
+                if (touchHelper != null) {
+                    touchHelper.startDrag(this);
+                }
+                return true;
             });
 
             deleteButton.setOnClickListener(v -> {
@@ -125,7 +169,7 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public interface OnTodoTaskClickListener {
         void Todo_onAddTaskClick();
-        void Todo_onMoveUpClick(TodoTask task);
         void Todo_onDeleteClick(TodoTask task);
+        void Todo_onPriorityChange(List<TodoTask> tasks); // 新增回调，当优先级改变时
     }
 }

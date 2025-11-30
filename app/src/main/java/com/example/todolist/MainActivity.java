@@ -12,10 +12,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.todolist.adapter.DailyTaskAdapter;
 import com.example.todolist.adapter.TodoAdapter;
+import com.example.todolist.adapter.TodoItemTouchHelperCallback;
 import com.example.todolist.data.DailyTaskManager;
 import com.example.todolist.data.Data;
 import com.example.todolist.data.TodoManager;
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     private TodoAdapter todoAdapter;
     private TodoManager todoManager;
     private List<TodoTask> todoTaskList;
+    private ItemTouchHelper itemTouchHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,6 +180,14 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         todoTasksRecyclerView.setLayoutManager(layoutManager);
         todoTasksRecyclerView.setAdapter(todoAdapter);
+
+        // 设置ItemTouchHelper用于拖拽
+        ItemTouchHelper.Callback callback = new TodoItemTouchHelperCallback(todoAdapter);
+        itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(todoTasksRecyclerView);
+
+        // 将touchHelper传递给适配器
+        todoAdapter.setTouchHelper(itemTouchHelper);
     }
 
     private void updateTabStates(Button activeTab) {
@@ -263,16 +274,17 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     }
 
     @Override
-    public void Todo_onMoveUpClick(TodoTask task) {
-        todoManager.moveTaskUp(task);
-        // 重新获取任务列表并更新适配器
-        todoTaskList = todoManager.getTodoTasks();
-        todoAdapter.updateData(todoTaskList);
+    public void Todo_onDeleteClick(TodoTask task) {
+        showDeleteTodoConfirmationDialog(task);
     }
 
     @Override
-    public void Todo_onDeleteClick(TodoTask task) {
-        showDeleteTodoConfirmationDialog(task);
+    public void Todo_onPriorityChange(List<TodoTask> tasks) {
+        // 当优先级改变时，更新到数据库
+        todoManager.updateTasksPriorities(tasks);
+        // 刷新适配器
+        todoTaskList = todoManager.getTodoTasks();
+        todoAdapter.updateData(todoTaskList);
     }
 
     private void showAddTodoDialog() {
