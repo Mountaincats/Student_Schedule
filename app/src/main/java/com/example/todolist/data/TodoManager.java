@@ -27,25 +27,26 @@ public class TodoManager {
         long newId = todoDao.insertTask(task);
         if (newId != -1) {
             task.setId((int) newId);
-            // 新任务添加到列表开头，然后重新排序
-            todoTaskList.add(0, task);
-            sortTasksByPriority();
+            // 重新加载数据以确保顺序正确
+            loadData();
         }
     }
 
     public void updateTask(TodoTask task) {
         todoDao.updateTask(task);
-        sortTasksByPriority();
+        // 重新加载数据以确保顺序正确
+        loadData();
     }
 
     public void deleteTask(TodoTask task) {
         todoDao.deleteTask(task);
+        // 从内存列表中移除
         todoTaskList.remove(task);
     }
 
     // 提升任务优先级（向上移动）
     public void moveTaskUp(TodoTask task) {
-        int currentIndex = todoTaskList.indexOf(task);
+        int currentIndex = findTaskIndexById(task.getId());
         if (currentIndex > 0) { // 不是第一个才能上移
             TodoTask previousTask = todoTaskList.get(currentIndex - 1);
 
@@ -58,20 +59,19 @@ public class TodoManager {
             todoDao.updateTask(task);
             todoDao.updateTask(previousTask);
 
-            // 重新排序列表
-            sortTasksByPriority();
+            // 重新加载数据以确保顺序正确
+            loadData();
         }
     }
 
-    // 按优先级排序
-    private void sortTasksByPriority() {
-        todoTaskList.sort((task1, task2) -> {
-            int priorityCompare = Integer.compare(task1.getPriority(), task2.getPriority());
-            if (priorityCompare == 0) {
-                return Long.compare(task2.getCreatedTime(), task1.getCreatedTime());
+    // 根据ID查找任务在列表中的索引
+    private int findTaskIndexById(int taskId) {
+        for (int i = 0; i < todoTaskList.size(); i++) {
+            if (todoTaskList.get(i).getId() == taskId) {
+                return i;
             }
-            return priorityCompare;
-        });
+        }
+        return -1;
     }
 
     public int getNextTaskId() {

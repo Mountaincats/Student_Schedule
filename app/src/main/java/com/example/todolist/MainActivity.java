@@ -265,7 +265,9 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     @Override
     public void Todo_onMoveUpClick(TodoTask task) {
         todoManager.moveTaskUp(task);
-        todoAdapter.notifyDataSetChanged();
+        // 重新获取任务列表并更新适配器
+        todoTaskList = todoManager.getTodoTasks();
+        todoAdapter.updateData(todoTaskList);
     }
 
     @Override
@@ -290,7 +292,9 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
                 if (!taskContent.isEmpty()) {
                     TodoTask newTask = new TodoTask(-1, taskContent);
                     todoManager.addTask(newTask);
-                    todoAdapter.notifyDataSetChanged();
+                    // 重新获取任务列表并更新适配器
+                    todoTaskList = todoManager.getTodoTasks();
+                    todoAdapter.updateData(todoTaskList);
                 }
             }
         });
@@ -307,11 +311,10 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         builder.setPositiveButton("删除", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                int position = todoTaskList.indexOf(task);
-                if (position != -1) {
-                    todoManager.deleteTask(task);
-                    todoAdapter.notifyItemRemoved(position);
-                }
+                todoManager.deleteTask(task);
+                // 重新获取任务列表并更新适配器
+                todoTaskList = todoManager.getTodoTasks();
+                todoAdapter.updateData(todoTaskList);
             }
         });
 

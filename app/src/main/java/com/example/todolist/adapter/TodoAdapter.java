@@ -57,6 +57,12 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return taskList.size() + 1; // +1 for add button
     }
 
+    // 更新数据并刷新
+    public void updateData(List<TodoTask> newTaskList) {
+        this.taskList = newTaskList;
+        notifyDataSetChanged();
+    }
+
     // 添加按钮的ViewHolder
     class AddButtonViewHolder extends RecyclerView.ViewHolder {
         Button addButton;
