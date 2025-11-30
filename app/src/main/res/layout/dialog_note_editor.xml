@@ -17,7 +17,7 @@
             android:id="@+id/tvNoteTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="添加备注"
+            android:text="编辑备注"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@android:color/black"

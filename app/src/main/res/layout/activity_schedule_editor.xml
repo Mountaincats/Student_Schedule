@@ -157,7 +157,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="添加备注"
+            android:text="编辑备注"
             android:layout_marginEnd="8dp"
             android:drawableStart="@android:drawable/ic_menu_edit"
             android:drawablePadding="8dp"
