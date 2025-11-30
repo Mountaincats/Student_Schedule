@@ -8,7 +8,7 @@ public class Schedule {
     private String name;    // 名称
     private Note note;
     private int colorArgb;  // 颜色，使用 ARGB 整数表示
-    private boolean isTemporarySchedule; // 是否为临时行程（临时行程不会加入天的重复，并且在显示时有更高的优先级，比如说，两个行程重叠，优先显示临时行程）
+    private boolean isTemporarySchedule; // 是否为临时行程
 
     public Schedule(int startTime, int endTime, String name, Note note, int colorArgb, boolean isTemporarySchedule){
         validateTimes(startTime, endTime);
@@ -113,6 +113,17 @@ public class Schedule {
 
     public void setColorArgb(int colorArgb) {
         this.colorArgb = colorArgb;
+    }
+
+    /**
+     * 通过 RGB 通道设置颜色（Alpha 通道默认为 255/不透明）
+     * @param r 红色分量 (0-255)
+     * @param g 绿色分量 (0-255)
+     * @param b 蓝色分量 (0-255)
+     */
+    public void setColorRgb(int r, int g, int b) {
+        // 使用位运算合成 ARGB 整数
+        this.colorArgb = (0xFF << 24) | (r << 16) | (g << 8) | b;
     }
 
     public void setTemporarySchedule(boolean temporarySchedule) {
