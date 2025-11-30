@@ -9,7 +9,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -91,21 +90,28 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         btnSchedule.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showScheduleView();
+                // 防止重复点击刷新
+                if (!v.isSelected()) {
+                    showScheduleView();
+                }
             }
         });
 
         btnTodo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showTodoView();
+                if (!v.isSelected()) {
+                    showTodoView();
+                }
             }
         });
 
         btnDaily.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showDailyView();
+                if (!v.isSelected()) {
+                    showDailyView();
+                }
             }
         });
     }
@@ -114,8 +120,6 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
 
     private void showScheduleView() {
         // 切换到 ScheduleFragment
-        // 注意：如果 contentFrame 里之前是 View，removeAllViews 会清除它们
-        // 如果之前是 Fragment，replace 会替换它
         contentFrame.removeAllViews();
         
         getSupportFragmentManager().beginTransaction()
@@ -128,11 +132,6 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     // ================= 其他 Tab 逻辑 =================
 
     private void showTodoView() {
-        // 移除 Fragment (如果有的话)，因为我采取了解耦的思路，所以ai自动添加了两段移除Fragment的代码，只有改变了两个函数，并且确定不影响函数原本功能的实现
-        // 简单的做法是先 removeAllViews，虽然这不会 destroy Fragment，但会移除 Fragment 的 View
-        // 更好的做法是先从 FragmentManager 中移除 Fragment，或者隐藏它
-        // 这里为了保持与旧代码兼容，我们直接 removeAllViews，因为旧代码是直接 addView 的
-        
         // 清理 Fragment 容器
         androidx.fragment.app.Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.contentFrame);
         if (currentFragment != null) {
