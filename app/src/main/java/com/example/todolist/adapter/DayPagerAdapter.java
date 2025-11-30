@@ -1,9 +1,12 @@
 package com.example.todolist.adapter;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -11,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.todolist.R;
+import com.example.todolist.data.Data;
 import com.example.todolist.model.Day;
 import com.example.todolist.model.Schedule;
 import com.example.todolist.model.Week;
@@ -19,36 +23,25 @@ import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
 public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayViewHolder> {
-    private Week week; // 数据源：规则引擎
-    private LocalDate baseDate; // 基准日期 (通常是今天)
-    
-    // 设定一个巨大的中间值作为起始位置，实现双向无限滑动
+    private Week week;
+    private LocalDate baseDate;
+
     public static final int START_POSITION = Integer.MAX_VALUE / 2;
 
-    // 高度比例：每一分钟对应多少 dp
     private static final float DP_PER_MINUTE = 1.5f;
-    // 左侧时间轴宽度 dp
     private static final int TIMELINE_WIDTH_DP = 50;
-    // 顶部留白高度
     private static final int TOP_SPACE_DP = 80;
-    // 底部留白高度
     private static final int BOTTOM_SPACE_DP = 80;
 
     public DayPagerAdapter(Week week, LocalDate baseDate) {
         this.week = week;
         this.baseDate = baseDate;
     }
-    
-    /**
-     * 根据 position 计算对应的日期
-     */
+
     public LocalDate getDateAtPosition(int position) {
         return baseDate.plusDays(position - START_POSITION);
     }
 
-    /**
-     * 根据日期反推 position
-     */
     public int getPositionForDate(LocalDate date) {
         return START_POSITION + (int) ChronoUnit.DAYS.between(baseDate, date);
     }
@@ -67,38 +60,40 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
 
     @Override
     public void onBindViewHolder(@NonNull DayViewHolder holder, int position) {
-        // 动态计算当前页面的日期
         LocalDate date = getDateAtPosition(position);
-        
-        // 向 Week 请求这一天的数据
         Day day = week.getDayForDate(date);
-        
-        // 如果这一天没有数据，创建一个临时的 Day 用于显示空时间轴
+
         if (day == null) {
             day = new Day(date);
             day.setActiveHours(8, 22);
         }
-        
+
         holder.bind(day);
     }
 
     @Override
     public int getItemCount() {
-        return Integer.MAX_VALUE; // 无限滑动
+        return Integer.MAX_VALUE;
     }
 
     class DayViewHolder extends RecyclerView.ViewHolder {
         RelativeLayout container;
         View timelineGuide;
+        float density; // 缓存 density
 
         DayViewHolder(View itemView) {
             super(itemView);
             container = itemView.findViewById(R.id.dayScheduleContainer);
             timelineGuide = itemView.findViewById(R.id.timeline_guide);
+            density = itemView.getContext().getResources().getDisplayMetrics().density;
         }
 
         void bind(Day day) {
             container.removeAllViews();
+
+            // 如果 container 是空的（刚回收回来），不需要 addTimelineGuide 因为它在 xml 里？
+            // 不，我们在 xml 里定义了 guide，但是 removeAllViews 会把它删掉。
+            // 所以必须重新添加。
 
             addHeaderView();
             addTimelineGuide();
@@ -107,6 +102,12 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
 
             int startHour = day.getActiveStartHour();
             int endHour = day.getActiveEndHour();
+
+            // 优化：如果 activeHours 异常，保护一下
+            if (startHour >= endHour) {
+                startHour = 8;
+                endHour = 22;
+            }
 
             for (int h = startHour; h <= endHour; h++) {
                 addTimeLabel(h, startHour);
@@ -117,11 +118,10 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             int contentHeight = (int)(totalMinutes * DP_PER_MINUTE);
 
             for (Schedule schedule : day.getSchedules()) {
-                addScheduleBlock(schedule, startHour);
+                addScheduleBlock(schedule, startHour, day);
             }
 
             addFooterView(TOP_SPACE_DP + contentHeight);
-
             container.setMinimumHeight(dp2px(TOP_SPACE_DP + contentHeight + BOTTOM_SPACE_DP));
 
             if (container.getParent() instanceof ScrollView) {
@@ -185,7 +185,7 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             container.addView(line, params);
         }
 
-        private void addScheduleBlock(Schedule schedule, int baseStartHour) {
+        private void addScheduleBlock(Schedule schedule, int baseStartHour, Day day) {
             int startMinutesFromBase = schedule.getStartTime() - (baseStartHour * 60);
             int duration = schedule.getEndTime() - schedule.getStartTime();
             if (startMinutesFromBase < 0) return;
@@ -202,17 +202,72 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             params.setMargins(dp2px(TIMELINE_WIDTH_DP + 4), dp2px(marginTop), dp2px(8), 0);
 
             TextView tv = new TextView(itemView.getContext());
-            tv.setText(schedule.getName() + "\n" + schedule.getNote().getName());
+            // 增加防空判断
+            String noteName = (schedule.getNote() != null && schedule.getNote().getName() != null) ? schedule.getNote().getName() : "";
+            tv.setText(schedule.getName() + "\n" + noteName);
             tv.setTextColor(Color.WHITE);
             tv.setTextSize(12);
             tv.setPadding(dp2px(4), dp2px(4), dp2px(4), dp2px(4));
 
             card.addView(tv);
             container.addView(card, params);
+
+            card.setOnClickListener(v -> {
+                try {
+                    showScheduleDetailDialog(itemView.getContext(), schedule, day);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        private void showScheduleDetailDialog(Context context, Schedule schedule, Day day) {
+            if (context == null || schedule == null) return;
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_schedule_detail, null);
+            builder.setView(dialogView);
+
+            AlertDialog dialog = builder.create();
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            }
+
+            TextView tvName = dialogView.findViewById(R.id.tvDetailScheduleName);
+            TextView tvNoteName = dialogView.findViewById(R.id.tvDetailNoteName);
+            TextView tvNoteContent = dialogView.findViewById(R.id.tvDetailNoteContent);
+            View btnDelete = dialogView.findViewById(R.id.btnDetailDelete);
+            Button btnConfirm = dialogView.findViewById(R.id.btnDetailConfirm);
+            Button btnEdit = dialogView.findViewById(R.id.btnDetailEdit);
+
+            tvName.setText(schedule.getName());
+
+            if (schedule.getNote() != null) {
+                tvNoteName.setText(schedule.getNote().getName() != null ? schedule.getNote().getName() : "备注");
+                tvNoteContent.setText(schedule.getNote().getContent() != null ? schedule.getNote().getContent() : "");
+            } else {
+                tvNoteName.setText("备注");
+                tvNoteContent.setText("");
+            }
+
+            btnConfirm.setOnClickListener(v -> dialog.dismiss());
+
+            btnDelete.setOnClickListener(v -> {
+                if (day != null) {
+                    day.removeSchedule(schedule);
+                    Data.getInstance().saveDay(day);
+                    notifyDataSetChanged();
+                }
+                dialog.dismiss();
+            });
+
+            btnEdit.setOnClickListener(v -> dialog.dismiss());
+
+            dialog.show();
         }
 
         private int dp2px(float dp) {
-            float density = itemView.getContext().getResources().getDisplayMetrics().density;
+            // 使用缓存的 density
             return (int) (dp * density + 0.5f);
         }
     }

@@ -12,13 +12,12 @@
         android:layout_height="wrap_content"
         android:padding="20dp">
 
-        <!-- 顶部：删除按钮 -->
-        <!-- 使用 ImageButton 显示垃圾桶图标，或者 TextView 显示文字 -->
+        <!-- 顶部：删除按钮
+            android:text="删除" -->
         <TextView
             android:id="@+id/btnDetailDelete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="删除"
             android:textColor="#F44336"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -99,10 +98,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="确认"
-                android:backgroundTint="#E0E0E0"
-                android:textColor="#212121"
-                android:layout_marginEnd="8dp"
-                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"/>
+                android:textSize="16sp"
+                app:backgroundTint="#6200EE"
+                android:textColor="@android:color/white"
+                android:layout_marginEnd="8dp"/>
 
             <!-- 编辑按钮 -->
             <Button
@@ -111,7 +110,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="编辑"
-                android:backgroundTint="#2196F3"
+                android:textSize="16sp"
+                app:backgroundTint="#2196F3"
                 android:textColor="@android:color/white"
                 android:layout_marginStart="8dp"/>
 
