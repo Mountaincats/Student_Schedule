@@ -2,68 +2,104 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal">
+    android:orientation="vertical">
 
-    <!-- 左侧按钮栏 - 增加宽度以确保触摸目标足够大 -->
-    <LinearLayout
-        android:layout_width="120dp"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="#f5f5f5"
-        android:padding="16dp">
+    <!-- 顶部工具栏 -->
 
-        <!-- 增加按钮尺寸和内边距 -->
-        <Button
+    <!-- 主体内容区域 -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme">
+
+        <!-- 设置按钮放在工具栏左侧 -->
+        <ImageButton
             android:id="@+id/btnSettings"
-            android:layout_width="88dp"
-            android:layout_height="88dp"
-            android:minWidth="88dp"
-            android:minHeight="88dp"
-            android:text="@string/settings"
-            android:layout_marginBottom="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/settings"
+            android:layout_gravity="end"
             android:padding="12dp"
-            android:background="@drawable/button_selector" />
+            android:src="@android:drawable/ic_menu_preferences" />
 
-        <Button
-            android:id="@+id/btnSchedule"
-            android:layout_width="88dp"
-            android:layout_height="88dp"
-            android:minWidth="88dp"
-            android:minHeight="88dp"
-            android:text="@string/schedule"
-            android:layout_marginBottom="16dp"
-            android:padding="12dp"
-            android:background="@drawable/button_selector" />
+    </androidx.appcompat.widget.Toolbar>
 
-        <Button
-            android:id="@+id/btnTodo"
-            android:layout_width="88dp"
-            android:layout_height="88dp"
-            android:minWidth="88dp"
-            android:minHeight="88dp"
-            android:text="@string/todo"
-            android:layout_marginBottom="16dp"
-            android:padding="12dp"
-            android:background="@drawable/button_selector" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btnDaily"
-            android:layout_width="88dp"
-            android:layout_height="88dp"
-            android:minWidth="88dp"
-            android:minHeight="88dp"
-            android:text="@string/daily"
-            android:padding="12dp"
-            android:background="@drawable/button_selector" />
+        <!-- 左侧垂直页签 - 减少宽度并向上对齐 -->
+        <LinearLayout
+            android:layout_width="75dp"
+            android:layout_height="match_parent"
+            android:background="#f5f5f5"
+            android:gravity="top"
+            android:orientation="vertical"
+            android:padding="6dp">
+
+            <!-- 课表页签 -->
+            <Button
+                android:id="@+id/btnSchedule"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_marginBottom="4dp"
+
+                android:background="@drawable/button_selector"
+                android:gravity="center|center"
+                android:lines="4"
+                android:minHeight="0dp"
+                android:singleLine="false"
+                android:text="@string/schedule"
+
+                android:textAllCaps="false" />
+
+            <!-- 待办页签 -->
+            <Button
+                android:id="@+id/btnTodo"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_marginBottom="4dp"
+
+                android:background="@drawable/button_selector"
+                android:gravity="center|center"
+                android:lines="4"
+                android:minHeight="0dp"
+                android:singleLine="false"
+                android:text="@string/todo"
+
+                android:textAllCaps="false" />
+
+            <!-- 每日页签 -->
+            <Button
+                android:id="@+id/btnDaily"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+
+                android:background="@drawable/button_selector"
+                android:gravity="center|center"
+                android:lines="4"
+                android:minHeight="0dp"
+                android:singleLine="false"
+                android:text="@string/daily"
+
+                android:textAllCaps="false" />
+
+        </LinearLayout>
+
+        <!-- 右侧内容区域 -->
+        <FrameLayout
+            android:id="@+id/contentFrame"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="16dp" />
 
     </LinearLayout>
-
-    <!-- 右侧内容区域 -->
-    <FrameLayout
-        android:id="@+id/contentFrame"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:padding="20dp" />
 
 </LinearLayout>

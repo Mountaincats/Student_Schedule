@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Todo List App</string>
+    <string name="app_name">日程表</string>
 
     <!-- 锁屏界面字符串 -->
     <string name="app_locked">应用已锁定</string>
@@ -9,9 +9,10 @@
 
     <!-- 主界面字符串 -->
     <string name="settings">设置</string>
-    <string name="schedule">课表</string>
-    <string name="todo">待办</string>
-    <string name="daily">每日</string>
+
+    <string name="schedule">学\n生\n课\n表</string>
+    <string name="todo">待\n办\n任\n务</string>
+    <string name="daily">每\n日\n任\n务</string>
 
     <!-- 设置界面字符串 -->
     <string name="app_settings">应用设置</string>
@@ -27,7 +28,12 @@
 
     <!-- 功能界面字符串 -->
     <string name="schedule_feature">课表功能</string>
+
+    <string name="add_new_todo">添加新待办</string>
     <string name="todo_feature">待办事项</string>
+    <string name="add_todo">添加待办</string>
+    <string name="enter_todo_content">请输入待办内容</string>
+
     <string name="daily_feature">每日任务</string>
     <string name="feature_developing">功能开发中...</string>
 </resources>
