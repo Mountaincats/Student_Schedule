@@ -2,6 +2,7 @@ package com.example.todolist.adapter;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,14 +19,15 @@ import com.example.todolist.data.Data;
 import com.example.todolist.model.Day;
 import com.example.todolist.model.Schedule;
 import com.example.todolist.model.Week;
+import com.example.todolist.ScheduleEditorActivity;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
 public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayViewHolder> {
-    private Week week;
-    private LocalDate baseDate;
-
+    private Week week; 
+    private LocalDate baseDate; 
+    
     public static final int START_POSITION = Integer.MAX_VALUE / 2;
 
     private static final float DP_PER_MINUTE = 1.5f;
@@ -37,7 +39,7 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
         this.week = week;
         this.baseDate = baseDate;
     }
-
+    
     public LocalDate getDateAtPosition(int position) {
         return baseDate.plusDays(position - START_POSITION);
     }
@@ -62,12 +64,12 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
     public void onBindViewHolder(@NonNull DayViewHolder holder, int position) {
         LocalDate date = getDateAtPosition(position);
         Day day = week.getDayForDate(date);
-
+        
         if (day == null) {
             day = new Day(date);
             day.setActiveHours(8, 22);
         }
-
+        
         holder.bind(day);
     }
 
@@ -79,7 +81,7 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
     class DayViewHolder extends RecyclerView.ViewHolder {
         RelativeLayout container;
         View timelineGuide;
-        float density; // 缓存 density
+        float density;
 
         DayViewHolder(View itemView) {
             super(itemView);
@@ -90,11 +92,6 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
 
         void bind(Day day) {
             container.removeAllViews();
-
-            // 如果 container 是空的（刚回收回来），不需要 addTimelineGuide 因为它在 xml 里？
-            // 不，我们在 xml 里定义了 guide，但是 removeAllViews 会把它删掉。
-            // 所以必须重新添加。
-
             addHeaderView();
             addTimelineGuide();
 
@@ -103,7 +100,6 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             int startHour = day.getActiveStartHour();
             int endHour = day.getActiveEndHour();
 
-            // 优化：如果 activeHours 异常，保护一下
             if (startHour >= endHour) {
                 startHour = 8;
                 endHour = 22;
@@ -133,6 +129,7 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             }
         }
 
+        // ... Helper methods ...
         private void addHeaderView() {
             TextView tv = new TextView(itemView.getContext());
             tv.setText("没有更多行程");
@@ -202,7 +199,6 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             params.setMargins(dp2px(TIMELINE_WIDTH_DP + 4), dp2px(marginTop), dp2px(8), 0);
 
             TextView tv = new TextView(itemView.getContext());
-            // 增加防空判断
             String noteName = (schedule.getNote() != null && schedule.getNote().getName() != null) ? schedule.getNote().getName() : "";
             tv.setText(schedule.getName() + "\n" + noteName);
             tv.setTextColor(Color.WHITE);
@@ -211,7 +207,7 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
 
             card.addView(tv);
             container.addView(card, params);
-
+            
             card.setOnClickListener(v -> {
                 try {
                     showScheduleDetailDialog(itemView.getContext(), schedule, day);
@@ -227,7 +223,7 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_schedule_detail, null);
             builder.setView(dialogView);
-
+            
             AlertDialog dialog = builder.create();
             if (dialog.getWindow() != null) {
                 dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
@@ -241,7 +237,7 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             Button btnEdit = dialogView.findViewById(R.id.btnDetailEdit);
 
             tvName.setText(schedule.getName());
-
+            
             if (schedule.getNote() != null) {
                 tvNoteName.setText(schedule.getNote().getName() != null ? schedule.getNote().getName() : "备注");
                 tvNoteContent.setText(schedule.getNote().getContent() != null ? schedule.getNote().getContent() : "");
@@ -251,7 +247,7 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
             }
 
             btnConfirm.setOnClickListener(v -> dialog.dismiss());
-
+            
             btnDelete.setOnClickListener(v -> {
                 if (day != null) {
                     day.removeSchedule(schedule);
@@ -260,14 +256,34 @@ public class DayPagerAdapter extends RecyclerView.Adapter<DayPagerAdapter.DayVie
                 }
                 dialog.dismiss();
             });
-
-            btnEdit.setOnClickListener(v -> dialog.dismiss());
+            
+            // 修改：跳转到编辑页面
+            btnEdit.setOnClickListener(v -> {
+                dialog.dismiss();
+                Intent intent = new Intent(context, ScheduleEditorActivity.class);
+                // 传递当前 Schedule 的数据，以便回显
+                intent.putExtra("isEditMode", true);
+                intent.putExtra("name", schedule.getName());
+                intent.putExtra("start", schedule.getStartTime());
+                intent.putExtra("end", schedule.getEndTime());
+                intent.putExtra("color", schedule.getColorArgb());
+                if (schedule.getNote() != null) {
+                    intent.putExtra("noteName", schedule.getNote().getName());
+                    intent.putExtra("noteContent", schedule.getNote().getContent());
+                }
+                // 注意：这里最好也能传回它属于哪个 Day，以便保存时更新正确的 Day
+                // 简单起见，我们传 Day 的日期
+                if (day != null && day.getDate() != null) {
+                    intent.putExtra("targetDate", day.getDate().toString());
+                }
+                
+                context.startActivity(intent);
+            });
 
             dialog.show();
         }
 
         private int dp2px(float dp) {
-            // 使用缓存的 density
             return (int) (dp * density + 0.5f);
         }
     }

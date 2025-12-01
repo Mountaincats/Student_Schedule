@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="@android:color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp">
+
+        <!-- 标题 -->
+        <TextView
+            android:id="@+id/tvColorTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="设置颜色"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- RGB 滑动条区域 -->
+        <LinearLayout
+            android:id="@+id/layoutSliders"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="20dp"
+            app:layout_constraintTop_toBottomOf="@id/tvColorTitle">
+
+            <!-- Red -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="20dp"
+                    android:layout_height="wrap_content"
+                    android:text="R"
+                    android:textStyle="bold"
+                    android:textColor="#F44336"/>
+                <SeekBar
+                    android:id="@+id/sbRed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:max="255"
+                    android:progressTint="#F44336"
+                    android:thumbTint="#F44336"/>
+                <TextView
+                    android:id="@+id/tvRedValue"
+                    android:layout_width="30dp"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:gravity="end"
+                    android:textColor="#757575"/>
+            </LinearLayout>
+
+            <!-- Green -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+                <TextView
+                    android:layout_width="20dp"
+                    android:layout_height="wrap_content"
+                    android:text="G"
+                    android:textStyle="bold"
+                    android:textColor="#4CAF50"/>
+                <SeekBar
+                    android:id="@+id/sbGreen"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:max="255"
+                    android:progressTint="#4CAF50"
+                    android:thumbTint="#4CAF50"/>
+                <TextView
+                    android:id="@+id/tvGreenValue"
+                    android:layout_width="30dp"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:gravity="end"
+                    android:textColor="#757575"/>
+            </LinearLayout>
+
+            <!-- Blue -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="20dp"
+                    android:layout_height="wrap_content"
+                    android:text="B"
+                    android:textStyle="bold"
+                    android:textColor="#2196F3"/>
+                <SeekBar
+                    android:id="@+id/sbBlue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:max="255"
+                    android:progressTint="#2196F3"
+                    android:thumbTint="#2196F3"/>
+                <TextView
+                    android:id="@+id/tvBlueValue"
+                    android:layout_width="30dp"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:gravity="end"
+                    android:textColor="#757575"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 颜色预览区域 (圆角矩形) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardPreview"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:layout_constraintTop_toBottomOf="@id/layoutSliders">
+
+            <View
+                android:id="@+id/viewColorPreview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#000000"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 已保存颜色标签 -->
+        <TextView
+            android:id="@+id/tvSavedLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="已保存颜色"
+            android:textSize="14sp"
+            android:textColor="#757575"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardPreview"/>
+
+        <!-- 已保存颜色列表 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSavedColors"
+            android:layout_width="match_parent"
+            android:layout_height="150dp" 
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/tvSavedLabel"/>
+
+        <!-- 底部按钮区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="20dp"
+            app:layout_constraintTop_toBottomOf="@id/rvSavedColors"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <!-- 确认按钮 -->
+            <Button
+                android:id="@+id/btnConfirmColor"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="确认颜色"
+                android:textSize="16sp"
+                android:textColor="@android:color/white"
+                app:backgroundTint="#6200EE"
+                android:layout_marginEnd="8dp"
+                android:stateListAnimator="@null"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"/>
+
+            <!-- 保存按钮 -->
+            <Button
+                android:id="@+id/btnSaveColor"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="保存颜色"
+                android:textSize="16sp"
+                android:textColor="@android:color/white"
+                app:backgroundTint="#2196F3"
+                android:layout_marginStart="8dp"
+                android:stateListAnimator="@null"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"/>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

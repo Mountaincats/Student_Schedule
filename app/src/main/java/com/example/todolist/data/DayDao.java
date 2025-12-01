@@ -23,4 +23,7 @@ public interface DayDao {
     
     @Query("DELETE FROM days")
     void deleteAll();
+    
+    @Query("DELETE FROM days WHERE originDate = :date")
+    void deleteDaysByOriginDate(String date);
 }
