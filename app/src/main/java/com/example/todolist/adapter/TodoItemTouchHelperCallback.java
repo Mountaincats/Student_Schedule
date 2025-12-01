@@ -7,7 +7,8 @@ import androidx.recyclerview.widget.RecyclerView;
 public class TodoItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     private final TodoAdapter adapter;
-    private boolean isDragging = false;
+    private int fromPosition = -1;
+    private int toPosition = -1;
 
     public TodoItemTouchHelperCallback(TodoAdapter adapter) {
         this.adapter = adapter;
@@ -23,8 +24,8 @@ public class TodoItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     @Override
     public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-        int fromPosition = viewHolder.getAdapterPosition();
-        int toPosition = target.getAdapterPosition();
+        fromPosition = viewHolder.getAdapterPosition();
+        toPosition = target.getAdapterPosition();
 
         // 确保位置有效且不是添加按钮
         if (fromPosition < 0 || toPosition < 0 ||
@@ -33,7 +34,7 @@ public class TodoItemTouchHelperCallback extends ItemTouchHelper.Callback {
             return false;
         }
 
-        // 直接移动项目，而不是交换相邻项
+        // 使用直接移动方法，支持任意位置移动
         adapter.onItemMoveDirectly(fromPosition, toPosition);
         return true;
     }
@@ -60,13 +61,10 @@ public class TodoItemTouchHelperCallback extends ItemTouchHelper.Callback {
         super.onSelectedChanged(viewHolder, actionState);
 
         if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
-            isDragging = true;
-            // 设置拖拽状态
+            // 拖拽开始时设置状态
             if (viewHolder != null) {
                 viewHolder.itemView.setAlpha(0.7f);
             }
-        } else if (actionState == ItemTouchHelper.ACTION_STATE_IDLE) {
-            isDragging = false;
         }
     }
 
@@ -77,9 +75,6 @@ public class TodoItemTouchHelperCallback extends ItemTouchHelper.Callback {
         viewHolder.itemView.setAlpha(1.0f);
 
         // 拖拽结束时保存优先级
-        if (isDragging) {
-            adapter.onDragCompleted();
-            isDragging = false;
-        }
+        adapter.onDragEnd();
     }
 }

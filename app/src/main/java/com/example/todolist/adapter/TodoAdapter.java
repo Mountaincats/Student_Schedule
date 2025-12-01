@@ -21,6 +21,7 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<TodoTask> taskList;
     private OnTodoTaskClickListener listener;
     private ItemTouchHelper touchHelper;
+    private boolean isDragging = false;
 
     public TodoAdapter(List<TodoTask> taskList, OnTodoTaskClickListener listener) {
         this.taskList = taskList;
@@ -71,33 +72,80 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    // 直接移动项目到指定位置
-    public void onItemMoveDirectly(int fromPosition, int toPosition) {
+    // 方案1：使用Collections.swap实现相邻交换（支持实时刷新）
+    public void onItemSwap(int fromPosition, int toPosition) {
         if (fromPosition < toPosition) {
             for (int i = fromPosition; i < toPosition; i++) {
                 Collections.swap(taskList, i, i + 1);
+                // 更新优先级
+                taskList.get(i).setPriority(i);
+                taskList.get(i + 1).setPriority(i + 1);
             }
         } else {
             for (int i = fromPosition; i > toPosition; i--) {
                 Collections.swap(taskList, i, i - 1);
+                // 更新优先级
+                taskList.get(i).setPriority(i);
+                taskList.get(i - 1).setPriority(i - 1);
             }
         }
+
+        // 通知移动和刷新序号
         notifyItemMoved(fromPosition, toPosition);
+
+        // 刷新移动范围内的所有项目序号
+        int start = Math.min(fromPosition, toPosition);
+        int end = Math.max(fromPosition, toPosition);
+        notifyItemRangeChanged(start, end - start + 1);
+
+        // 立即更新优先级
+        if (listener != null) {
+            listener.Todo_onPriorityChange(taskList);
+        }
     }
 
-    // 拖拽完成后的回调
-    public void onDragCompleted() {
-        // 更新优先级
-        updatePriorities();
+    // 方案2：直接移动项目到任意位置（支持任意位置移动）
+    public void onItemMoveDirectly(int fromPosition, int toPosition) {
+        if (fromPosition < 0 || toPosition < 0 ||
+                fromPosition >= taskList.size() || toPosition >= taskList.size()) {
+            return;
+        }
+
+        // 保存要移动的项目
+        TodoTask movedTask = taskList.get(fromPosition);
+
+        // 从原位置移除
+        taskList.remove(fromPosition);
+
+        // 插入到新位置
+        taskList.add(toPosition, movedTask);
+
+        // 更新所有任务的优先级
+        updateAllPriorities();
+
+        // 通知项目移动
+        notifyItemMoved(fromPosition, toPosition);
+
+        // 刷新所有项目的序号（因为位置都变了）
+        notifyItemRangeChanged(0, taskList.size());
     }
 
     // 更新所有任务的优先级
-    private void updatePriorities() {
+    private void updateAllPriorities() {
         for (int i = 0; i < taskList.size(); i++) {
             taskList.get(i).setPriority(i);
         }
+    }
 
-        // 通知优先级改变
+    // 拖拽开始
+    public void onDragStart() {
+        isDragging = true;
+    }
+
+    // 拖拽结束
+    public void onDragEnd() {
+        isDragging = false;
+        // 拖拽结束时保存优先级
         if (listener != null) {
             listener.Todo_onPriorityChange(taskList);
         }
@@ -141,6 +189,7 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             dragHandle.setOnLongClickListener(v -> {
                 if (touchHelper != null) {
                     touchHelper.startDrag(this);
+                    onDragStart();
                 }
                 return true;
             });
@@ -149,6 +198,7 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             itemView.setOnLongClickListener(v -> {
                 if (touchHelper != null) {
                     touchHelper.startDrag(this);
+                    onDragStart();
                 }
                 return true;
             });
@@ -167,6 +217,13 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             // 显示序号（位置+1）
             taskNumber.setText(String.valueOf(position + 1));
             taskContent.setText(task.getContent());
+
+            // 设置拖拽状态
+            if (isDragging) {
+                itemView.setAlpha(0.7f);
+            } else {
+                itemView.setAlpha(1.0f);
+            }
         }
     }
 

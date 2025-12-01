@@ -281,9 +281,6 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     public void Todo_onPriorityChange(List<TodoTask> tasks) {
         // 当优先级改变时，更新到数据库
         todoManager.updateTasksPriorities(tasks);
-        // 刷新适配器
-        todoTaskList = todoManager.getTodoTasks();
-        todoAdapter.updateData(todoTaskList);
     }
 
     private void showAddTodoDialog() {

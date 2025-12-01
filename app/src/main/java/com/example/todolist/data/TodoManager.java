@@ -38,7 +38,6 @@ public class TodoManager {
 
     // 批量更新任务优先级
     public void updateTasksPriorities(List<TodoTask> tasks) {
-        // 使用事务批量更新，提高性能
         todoDao.updateTasksInTransaction(tasks);
         // 重新加载数据
         loadData();
