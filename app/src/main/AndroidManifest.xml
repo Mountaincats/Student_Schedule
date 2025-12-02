@@ -32,5 +32,10 @@
         <activity
             android:name=".SettingMainActivity"
             android:exported="false"/>
+
+        <!-- 日程编辑界面 (新增) -->
+        <activity
+            android:name=".ScheduleEditorActivity"
+            android:exported="false" />
     </application>
 </manifest>
