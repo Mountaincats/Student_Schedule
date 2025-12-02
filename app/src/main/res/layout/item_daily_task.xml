@@ -23,7 +23,10 @@
             android:text="任务内容"
             android:textSize="16sp"
             android:maxLines="2"
-            android:ellipsize="end" />
+            android:ellipsize="end"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground"/>
 
         <!-- 操作按钮区域 -->
         <LinearLayout

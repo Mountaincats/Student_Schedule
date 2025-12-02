@@ -37,6 +37,7 @@ public class DailyTaskDao {
     }
 
     // 更新任务
+    // 更新任务（包括内容、完成状态等）
     public int updateTask(DailyTask task) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -52,6 +53,7 @@ public class DailyTaskDao {
         db.close();
         return count;
     }
+
 
     // 删除任务
     public int deleteTask(DailyTask task) {

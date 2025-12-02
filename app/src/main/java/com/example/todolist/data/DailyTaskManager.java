@@ -11,7 +11,7 @@ import java.util.Locale;
 public class DailyTaskManager {
     private DailyTaskDao dailyTaskDao;
     private List<DailyTask> dailyTaskList;
-    private int taskIdCounter = 0; // 不再需要，因为数据库使用自增ID
+//    private int taskIdCounter = 0; // 不再需要，因为数据库使用自增ID
 
     public DailyTaskManager(Context context) {
         dailyTaskDao = new DailyTaskDao(context);

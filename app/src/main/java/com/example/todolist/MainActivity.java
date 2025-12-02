@@ -9,13 +9,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.todolist.adapter.DailyTaskAdapter;
 import com.example.todolist.adapter.TodoAdapter;
+import com.example.todolist.adapter.TodoItemTouchHelperCallback;
 import com.example.todolist.data.DailyTaskManager;
 import com.example.todolist.data.Data;
 import com.example.todolist.data.TodoManager;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     private TodoAdapter todoAdapter;
     private TodoManager todoManager;
     private List<TodoTask> todoTaskList;
+    private ItemTouchHelper itemTouchHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,21 +90,28 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         btnSchedule.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showScheduleView();
+                // 防止重复点击刷新
+                if (!v.isSelected()) {
+                    showScheduleView();
+                }
             }
         });
 
         btnTodo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showTodoView();
+                if (!v.isSelected()) {
+                    showTodoView();
+                }
             }
         });
 
         btnDaily.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showDailyView();
+                if (!v.isSelected()) {
+                    showDailyView();
+                }
             }
         });
     }
@@ -111,8 +120,6 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
 
     private void showScheduleView() {
         // 切换到 ScheduleFragment
-        // 注意：如果 contentFrame 里之前是 View，removeAllViews 会清除它们
-        // 如果之前是 Fragment，replace 会替换它
         contentFrame.removeAllViews();
         
         getSupportFragmentManager().beginTransaction()
@@ -125,11 +132,6 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     // ================= 其他 Tab 逻辑 =================
 
     private void showTodoView() {
-        // 移除 Fragment (如果有的话)，因为我采取了解耦的思路，所以ai自动添加了两段移除Fragment的代码，只有改变了两个函数，并且确定不影响函数原本功能的实现
-        // 简单的做法是先 removeAllViews，虽然这不会 destroy Fragment，但会移除 Fragment 的 View
-        // 更好的做法是先从 FragmentManager 中移除 Fragment，或者隐藏它
-        // 这里为了保持与旧代码兼容，我们直接 removeAllViews，因为旧代码是直接 addView 的
-        
         // 清理 Fragment 容器
         androidx.fragment.app.Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.contentFrame);
         if (currentFragment != null) {
@@ -177,6 +179,14 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         todoTasksRecyclerView.setLayoutManager(layoutManager);
         todoTasksRecyclerView.setAdapter(todoAdapter);
+
+        // 设置ItemTouchHelper用于拖拽
+        ItemTouchHelper.Callback callback = new TodoItemTouchHelperCallback(todoAdapter);
+        itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(todoTasksRecyclerView);
+
+        // 将touchHelper传递给适配器
+        todoAdapter.setTouchHelper(itemTouchHelper);
     }
 
     private void updateTabStates(Button activeTab) {
@@ -190,6 +200,11 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     @Override
     public void onAddTaskClick() {
         showAddTaskDialog();
+    }
+
+    @Override
+    public void onEditTaskClick(DailyTask task) {
+        showEditDailyTaskDialog(task);
     }
 
     @Override
@@ -236,6 +251,38 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         builder.show();
     }
 
+    private void showEditDailyTaskDialog(final DailyTask task) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("编辑每日任务");
+
+        final EditText input = new EditText(this);
+        input.setText(task.getContent());
+        input.setSelection(task.getContent().length()); // 将光标移到文本末尾
+        input.setHint("请输入任务内容");
+        builder.setView(input);
+
+        builder.setPositiveButton("保存", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String newContent = input.getText().toString().trim();
+                if (!newContent.isEmpty() && !newContent.equals(task.getContent())) {
+                    // 更新任务内容
+                    task.setContent(newContent);
+                    dailyTaskManager.updateTask(task);
+
+                    // 刷新适配器
+                    int position = dailyTaskList.indexOf(task);
+                    if (position != -1) {
+                        dailyTaskAdapter.notifyItemChanged(position);
+                    }
+                }
+            }
+        });
+
+        builder.setNegativeButton("取消", null);
+        builder.show();
+    }
+
     private void showDeleteConfirmationDialog(final DailyTask task) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("确认删除");
@@ -263,16 +310,19 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     }
 
     @Override
-    public void Todo_onMoveUpClick(TodoTask task) {
-        todoManager.moveTaskUp(task);
-        // 重新获取任务列表并更新适配器
-        todoTaskList = todoManager.getTodoTasks();
-        todoAdapter.updateData(todoTaskList);
+    public void Todo_onEditTaskClick(TodoTask task) {
+        showEditTodoDialog(task);
     }
 
     @Override
     public void Todo_onDeleteClick(TodoTask task) {
         showDeleteTodoConfirmationDialog(task);
+    }
+
+    @Override
+    public void Todo_onPriorityChange(List<TodoTask> tasks) {
+        // 当优先级改变时，更新到数据库
+        todoManager.updateTasksPriorities(tasks);
     }
 
     private void showAddTodoDialog() {
@@ -295,6 +345,39 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
                     // 重新获取任务列表并更新适配器
                     todoTaskList = todoManager.getTodoTasks();
                     todoAdapter.updateData(todoTaskList);
+                }
+            }
+        });
+
+        builder.setNegativeButton("取消", null);
+        builder.show();
+    }
+
+    private void showEditTodoDialog(final TodoTask task) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("编辑待办事项");
+
+        final EditText input = new EditText(this);
+        input.setText(task.getContent());
+        input.setSelection(task.getContent().length()); // 将光标移到文本末尾
+        input.setMinLines(3);
+        input.setGravity(View.TEXT_ALIGNMENT_TEXT_START);
+        builder.setView(input);
+
+        builder.setPositiveButton("保存", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String newContent = input.getText().toString().trim();
+                if (!newContent.isEmpty() && !newContent.equals(task.getContent())) {
+                    // 更新任务内容
+                    task.setContent(newContent);
+                    todoManager.updateTask(task);
+
+                    // 刷新适配器
+                    int position = todoTaskList.indexOf(task);
+                    if (position != -1) {
+                        todoAdapter.notifyItemChanged(position);
+                    }
                 }
             }
         });

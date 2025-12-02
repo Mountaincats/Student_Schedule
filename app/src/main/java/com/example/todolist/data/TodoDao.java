@@ -29,7 +29,7 @@ public class TodoDao {
         return id;
     }
 
-    // 更新任务
+    // 更新任务（包括内容、优先级等）
     public int updateTask(TodoTask task) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -43,6 +43,28 @@ public class TodoDao {
         db.close();
         return count;
     }
+
+    // 使用事务批量更新任务
+    public void updateTasksInTransaction(List<TodoTask> tasks) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.beginTransaction();
+
+        try {
+            for (TodoTask task : tasks) {
+                ContentValues values = new ContentValues();
+                values.put(TodoDbHelper.COLUMN_PRIORITY, task.getPriority());
+
+                db.update(TodoDbHelper.TABLE_TODO_TASKS, values,
+                        TodoDbHelper.COLUMN_ID + " = ?",
+                        new String[]{String.valueOf(task.getId())});
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+    }
+
 
     // 删除任务
     public int deleteTask(TodoTask task) {
