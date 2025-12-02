@@ -29,9 +29,6 @@ public class Data {
         return instance;
     }
 
-    /**
-     * 加载所有数据到 Week 中。
-     */
     public void loadAllDataToWeek(Week week) {
         List<DayEntity> dayEntities = db.dayDao().getAllDays();
 
@@ -47,6 +44,12 @@ public class Data {
             Day day = new Day(dayEntity.originDate, dayEntity.isTemporaryDay, repeatRule);
             day.setActiveHours(dayEntity.activeStartHour, dayEntity.activeEndHour);
             
+            // 回写数据库 ID 到模型
+            day.setDatabaseId(dayEntity.id);
+            
+            // 先清空，再加载，防止重复
+            day.clearSchedules();
+            
             List<ScheduleEntity> scheduleEntities = db.scheduleDao().getSchedulesForDayId(dayEntity.id);
             for (ScheduleEntity se : scheduleEntities) {
                 Schedule.Note note = new Schedule.Note(se.noteName, se.noteContent);
@@ -60,20 +63,11 @@ public class Data {
         }
     }
 
-    /**
-     * 保存某一个 Day（包含它的 Schedules）。
-     * 采用覆盖策略：先删除该日期下的旧规则，再插入新的。
-     */
     public void saveDay(Day day) {
         if (day == null) return;
         
-        // 1. 先删除数据库中已有的针对该日期的规则
-        // 注意：这要求你的 DayDao 已经实现了 deleteDaysByOriginDate 方法
-        // 并且 Converters 能够正确处理 LocalDate 的转换
-        db.dayDao().deleteDaysByOriginDate(day.getDate().toString());
-        
-        // 2. 准备新的 DayEntity
         DayEntity entity = new DayEntity();
+        // 同步模型数据到 Entity
         entity.originDate = day.getDate();
         entity.activeStartHour = day.getActiveStartHour();
         entity.activeEndHour = day.getActiveEndHour();
@@ -86,10 +80,20 @@ public class Data {
         entity.repeatStartDate = rr.getStartDate();
         entity.repeatEndDate = rr.getEndDate();
 
-        // 3. 插入新的 DayEntity 并获取 ID
-        long dayId = db.dayDao().insert(entity); 
+        long dayId = day.getDatabaseId();
 
-        // 4. 保存 Schedules
+        // 根据有无 ID，决定是更新还是插入
+        if (dayId > 0) {
+            entity.id = dayId;
+            db.dayDao().update(entity);
+        } else {
+            dayId = db.dayDao().insert(entity);
+            day.setDatabaseId(dayId); // 回写新生成的 ID
+        }
+
+        // 对于 Schedule，采用全量覆盖策略：先删后加
+        db.scheduleDao().deleteAllSchedulesForDayId(dayId);
+
         for (Schedule schedule : day.getSchedules()) {
             ScheduleEntity se = new ScheduleEntity(
                     schedule.getStartTime(),
@@ -99,16 +103,13 @@ public class Data {
                     schedule.getNote().getContent(),
                     schedule.getColorArgb(),
                     schedule.isTemporarySchedule(),
-                    dayId // 关联刚刚生成的 Day ID
+                    dayId
             );
             db.scheduleDao().insert(se);
         }
     }
     
-    /**
-     * 清空所有数据（调试用）
-     */
     public void clearAllData() {
-        db.dayDao().deleteAll(); 
+        db.dayDao().deleteAll();
     }
 }
