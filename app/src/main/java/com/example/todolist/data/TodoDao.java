@@ -29,7 +29,7 @@ public class TodoDao {
         return id;
     }
 
-    // 更新任务
+    // 更新任务（包括内容、优先级等）
     public int updateTask(TodoTask task) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 

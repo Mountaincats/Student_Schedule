@@ -93,6 +93,16 @@ public class DailyTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             deleteButton = itemView.findViewById(R.id.deleteButton);
             weekIndicatorLayout = itemView.findViewById(R.id.weekIndicatorLayout);
 
+            // 设置任务内容的点击监听（用于编辑）
+            taskContent.setOnClickListener(v -> {
+                if (listener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION && position < taskList.size()) {
+                        listener.onEditTaskClick(taskList.get(position));
+                    }
+                }
+            });
+
             completionCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (listener != null) {
                     int position = getAdapterPosition();
@@ -150,6 +160,7 @@ public class DailyTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     public interface OnTaskClickListener {
         void onAddTaskClick();
+        void onEditTaskClick(DailyTask task); // 新增：编辑任务
         void onTaskCompleteClick(DailyTask task, boolean completed);
         void onTaskDeleteClick(DailyTask task);
     }

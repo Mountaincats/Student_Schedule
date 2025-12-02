@@ -75,7 +75,7 @@ public class DailyTask {
     public void setId(int id) {
         this.id = id;
     }
-        public String getContent() { return content; }
+    public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
     public boolean isCompletedToday() { return completedToday; }
     public void setCompletedToday(boolean completed) { this.completedToday = completed; }

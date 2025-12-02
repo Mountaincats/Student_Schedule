@@ -203,6 +203,11 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     }
 
     @Override
+    public void onEditTaskClick(DailyTask task) {
+        showEditDailyTaskDialog(task);
+    }
+
+    @Override
     public void onTaskCompleteClick(DailyTask task, boolean completed) {
         try {
             dailyTaskManager.markTaskCompleted(task, completed);
@@ -246,6 +251,38 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         builder.show();
     }
 
+    private void showEditDailyTaskDialog(final DailyTask task) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("编辑每日任务");
+
+        final EditText input = new EditText(this);
+        input.setText(task.getContent());
+        input.setSelection(task.getContent().length()); // 将光标移到文本末尾
+        input.setHint("请输入任务内容");
+        builder.setView(input);
+
+        builder.setPositiveButton("保存", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String newContent = input.getText().toString().trim();
+                if (!newContent.isEmpty() && !newContent.equals(task.getContent())) {
+                    // 更新任务内容
+                    task.setContent(newContent);
+                    dailyTaskManager.updateTask(task);
+
+                    // 刷新适配器
+                    int position = dailyTaskList.indexOf(task);
+                    if (position != -1) {
+                        dailyTaskAdapter.notifyItemChanged(position);
+                    }
+                }
+            }
+        });
+
+        builder.setNegativeButton("取消", null);
+        builder.show();
+    }
+
     private void showDeleteConfirmationDialog(final DailyTask task) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("确认删除");
@@ -270,6 +307,11 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     @Override
     public void Todo_onAddTaskClick() {
         showAddTodoDialog();
+    }
+
+    @Override
+    public void Todo_onEditTaskClick(TodoTask task) {
+        showEditTodoDialog(task);
     }
 
     @Override
@@ -303,6 +345,39 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
                     // 重新获取任务列表并更新适配器
                     todoTaskList = todoManager.getTodoTasks();
                     todoAdapter.updateData(todoTaskList);
+                }
+            }
+        });
+
+        builder.setNegativeButton("取消", null);
+        builder.show();
+    }
+
+    private void showEditTodoDialog(final TodoTask task) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("编辑待办事项");
+
+        final EditText input = new EditText(this);
+        input.setText(task.getContent());
+        input.setSelection(task.getContent().length()); // 将光标移到文本末尾
+        input.setMinLines(3);
+        input.setGravity(View.TEXT_ALIGNMENT_TEXT_START);
+        builder.setView(input);
+
+        builder.setPositiveButton("保存", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String newContent = input.getText().toString().trim();
+                if (!newContent.isEmpty() && !newContent.equals(task.getContent())) {
+                    // 更新任务内容
+                    task.setContent(newContent);
+                    todoManager.updateTask(task);
+
+                    // 刷新适配器
+                    int position = todoTaskList.indexOf(task);
+                    if (position != -1) {
+                        todoAdapter.notifyItemChanged(position);
+                    }
                 }
             }
         });

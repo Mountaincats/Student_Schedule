@@ -6,7 +6,8 @@
     android:background="@drawable/todo_task_background"
     android:padding="16dp"
     android:foreground="@drawable/todo_item_selector"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:minHeight="70dp" >
 
     <!-- 序号 -->
     <TextView
@@ -32,7 +33,10 @@
         android:text="任务内容"
         android:textSize="16sp"
         android:ellipsize="end"
-        android:lineSpacingExtra="4dp" />
+        android:lineSpacingExtra="4dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground"/>
 
     <!-- 左边：拖拽手柄和序号 -->
     <LinearLayout

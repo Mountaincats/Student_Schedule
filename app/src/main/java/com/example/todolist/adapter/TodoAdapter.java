@@ -203,6 +203,16 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 return true;
             });
 
+            // 设置任务内容的点击监听（用于编辑）
+            taskContent.setOnClickListener(v -> {
+                if (listener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION && position < taskList.size()) {
+                        listener.Todo_onEditTaskClick(taskList.get(position));
+                    }
+                }
+            });
+
             deleteButton.setOnClickListener(v -> {
                 if (listener != null) {
                     int position = getAdapterPosition();
@@ -229,6 +239,7 @@ public class TodoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public interface OnTodoTaskClickListener {
         void Todo_onAddTaskClick();
+        void Todo_onEditTaskClick(TodoTask task); // 新增：编辑任务
         void Todo_onDeleteClick(TodoTask task);
         void Todo_onPriorityChange(List<TodoTask> tasks);
     }
