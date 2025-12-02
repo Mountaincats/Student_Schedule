@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="50dp">
+
+    <!-- 设置中心标题 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
+        android:text="设置中心"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <!-- 跳转到设置密码页面的按钮 -->
+    <Button
+        android:id="@+id/btn_go_set_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#4ECDC4"
+        android:text="设置密码"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
+
+    <!-- 返回主页按钮 -->
+    <Button
+        android:id="@+id/btn_back_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="返回主页"
+        android:textSize="18sp"
+        android:layout_marginTop="20dp"/>
+
+</LinearLayout>

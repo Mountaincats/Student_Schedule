@@ -24,7 +24,7 @@
             android:contentDescription="@string/settings"
             android:layout_gravity="end"
             android:padding="12dp"
-            android:src="@android:drawable/ic_menu_preferences" />
+            android:src="@drawable/baseline_settings_24" />
 
     </androidx.appcompat.widget.Toolbar>
 

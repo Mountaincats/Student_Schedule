@@ -27,5 +27,10 @@
         <activity
             android:name=".SettingsActivity"
             android:exported="false" />
+
+        <!-- 设置中心页面 -->
+        <activity
+            android:name=".SettingMainActivity"
+            android:exported="false"/>
     </application>
 </manifest>
