@@ -23,9 +23,18 @@ import com.example.todolist.data.TodoManager;
 import com.example.todolist.model.DailyTask;
 import com.example.todolist.model.TodoTask;
 import com.example.todolist.ui.ScheduleFragment;
+import com.example.todolist.ui.dialog.ConfirmDeleteDialog;
+import com.example.todolist.ui.dialog.DailyTaskDialog;
+import com.example.todolist.ui.dialog.TodoTaskDialog;
+
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.OnTaskClickListener, TodoAdapter.OnTodoTaskClickListener {
+public class MainActivity extends AppCompatActivity implements
+        DailyTaskAdapter.OnTaskClickListener,
+        TodoAdapter.OnTodoTaskClickListener,
+        DailyTaskDialog.DailyTaskListener,
+        TodoTaskDialog.TodoTaskListener,
+        ConfirmDeleteDialog.ConfirmDeleteListener {
     private ImageButton btnSettings;
     private Button btnSchedule, btnTodo, btnDaily;
     private FrameLayout contentFrame;
@@ -199,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
     // DailyTaskAdapter接口实现
     @Override
     public void onAddTaskClick() {
-        showAddTaskDialog();
+        showAddDailyTaskDialog();
     }
 
     @Override
@@ -212,95 +221,18 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         try {
             dailyTaskManager.markTaskCompleted(task, completed);
         } catch (Exception e) {
-            return; 
+            return; // 如果出错，提前返回
         }
 
         try {
             dailyTaskAdapter.notifyDataSetChanged();
         } catch (Exception ignored) {
-
         }
     }
 
     @Override
     public void onTaskDeleteClick(DailyTask task) {
-        showDeleteConfirmationDialog(task);
-    }
-
-    private void showAddTaskDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("添加每日任务");
-
-        final EditText input = new EditText(this);
-        input.setHint("请输入任务内容");
-        builder.setView(input);
-
-        builder.setPositiveButton("添加", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String taskContent = input.getText().toString().trim();
-                if (!taskContent.isEmpty()) {
-                    DailyTask newTask = new DailyTask(-1, taskContent);
-                    dailyTaskManager.addTask(newTask);
-                    dailyTaskAdapter.notifyItemInserted(0);
-                }
-            }
-        });
-
-        builder.setNegativeButton("取消", null);
-        builder.show();
-    }
-
-    private void showEditDailyTaskDialog(final DailyTask task) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("编辑每日任务");
-
-        final EditText input = new EditText(this);
-        input.setText(task.getContent());
-        input.setSelection(task.getContent().length()); // 将光标移到文本末尾
-        input.setHint("请输入任务内容");
-        builder.setView(input);
-
-        builder.setPositiveButton("保存", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String newContent = input.getText().toString().trim();
-                if (!newContent.isEmpty() && !newContent.equals(task.getContent())) {
-                    // 更新任务内容
-                    task.setContent(newContent);
-                    dailyTaskManager.updateTask(task);
-
-                    // 刷新适配器
-                    int position = dailyTaskList.indexOf(task);
-                    if (position != -1) {
-                        dailyTaskAdapter.notifyItemChanged(position);
-                    }
-                }
-            }
-        });
-
-        builder.setNegativeButton("取消", null);
-        builder.show();
-    }
-
-    private void showDeleteConfirmationDialog(final DailyTask task) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("确认删除");
-        builder.setMessage("确定要删除这个任务吗？");
-
-        builder.setPositiveButton("删除", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                int position = dailyTaskList.indexOf(task);
-                if (position != -1) {
-                    dailyTaskManager.deleteTask(task);
-                    dailyTaskAdapter.notifyItemRemoved(position);
-                }
-            }
-        });
-
-        builder.setNegativeButton("取消", null);
-        builder.show();
+        showDeleteDailyConfirmationDialog(task);
     }
 
     // TodoAdapter接口实现
@@ -325,84 +257,109 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         todoManager.updateTasksPriorities(tasks);
     }
 
-    private void showAddTodoDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("添加待办事项");
+    // DailyTaskDialog接口实现
+    @Override
+    public void onDailyTaskAdded(String content) {
+        DailyTask newTask = new DailyTask(-1, content);
+        dailyTaskManager.addTask(newTask);
+        dailyTaskAdapter.notifyItemInserted(0);
+    }
 
-        final EditText input = new EditText(this);
-        input.setHint("请输入待办内容");
-        input.setMinLines(3);
-        input.setGravity(View.TEXT_ALIGNMENT_TEXT_START);
-        builder.setView(input);
+    @Override
+    public void onDailyTaskEdited(DailyTask task, String newContent) {
+        task.setContent(newContent);
+        dailyTaskManager.updateTask(task);
 
-        builder.setPositiveButton("添加", new DialogInterface.OnClickListener() {
+        int position = dailyTaskList.indexOf(task);
+        if (position != -1) {
+            dailyTaskAdapter.notifyItemChanged(position);
+        }
+    }
+
+    // TodoTaskDialog接口实现
+    @Override
+    public void onTodoTaskAdded(String content) {
+        TodoTask newTask = new TodoTask(-1, content);
+        todoManager.addTask(newTask);
+        todoTaskList = todoManager.getTodoTasks();
+        todoAdapter.updateData(todoTaskList);
+    }
+
+    @Override
+    public void onTodoTaskEdited(TodoTask task, String newContent) {
+        task.setContent(newContent);
+        todoManager.updateTask(task);
+
+        int position = todoTaskList.indexOf(task);
+        if (position != -1) {
+            todoAdapter.notifyItemChanged(position);
+        }
+    }
+
+    // ConfirmDeleteDialog接口实现
+    @Override
+    public void onConfirmDelete() {
+        // 这个实现需要根据具体删除的对象来处理
+        // 我们会在showDeleteConfirmationDialog中设置具体的删除逻辑
+    }
+
+    // 使用新的对话框显示方法
+    private void showAddDailyTaskDialog() {
+        DailyTaskDialog dialog = DailyTaskDialog.newAddInstance();
+        dialog.setListener(this);
+        dialog.show(getSupportFragmentManager(), "add_daily_task");
+    }
+
+    private void showEditDailyTaskDialog(DailyTask task) {
+        DailyTaskDialog dialog = DailyTaskDialog.newEditInstance(task);
+        dialog.setListener(this);
+        dialog.show(getSupportFragmentManager(), "edit_daily_task");
+    }
+
+    private void showDeleteDailyConfirmationDialog(final DailyTask task) {
+        ConfirmDeleteDialog dialog = ConfirmDeleteDialog.newInstance(
+                "确认删除",
+                "确定要删除这个每日任务吗？"
+        );
+        dialog.setListener(new ConfirmDeleteDialog.ConfirmDeleteListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String taskContent = input.getText().toString().trim();
-                if (!taskContent.isEmpty()) {
-                    TodoTask newTask = new TodoTask(-1, taskContent);
-                    todoManager.addTask(newTask);
-                    // 重新获取任务列表并更新适配器
-                    todoTaskList = todoManager.getTodoTasks();
-                    todoAdapter.updateData(todoTaskList);
+            public void onConfirmDelete() {
+                int position = dailyTaskList.indexOf(task);
+                if (position != -1) {
+                    dailyTaskManager.deleteTask(task);
+                    dailyTaskAdapter.notifyItemRemoved(position);
                 }
             }
         });
+        dialog.show(getSupportFragmentManager(), "delete_daily_task");
+    }
 
-        builder.setNegativeButton("取消", null);
-        builder.show();
+    private void showAddTodoDialog() {
+        TodoTaskDialog dialog = TodoTaskDialog.newAddInstance();
+        dialog.setListener(this);
+        dialog.show(getSupportFragmentManager(), "add_todo_task");
     }
 
     private void showEditTodoDialog(final TodoTask task) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("编辑待办事项");
-
-        final EditText input = new EditText(this);
-        input.setText(task.getContent());
-        input.setSelection(task.getContent().length()); // 将光标移到文本末尾
-        input.setMinLines(3);
-        input.setGravity(View.TEXT_ALIGNMENT_TEXT_START);
-        builder.setView(input);
-
-        builder.setPositiveButton("保存", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String newContent = input.getText().toString().trim();
-                if (!newContent.isEmpty() && !newContent.equals(task.getContent())) {
-                    // 更新任务内容
-                    task.setContent(newContent);
-                    todoManager.updateTask(task);
-
-                    // 刷新适配器
-                    int position = todoTaskList.indexOf(task);
-                    if (position != -1) {
-                        todoAdapter.notifyItemChanged(position);
-                    }
-                }
-            }
-        });
-
-        builder.setNegativeButton("取消", null);
-        builder.show();
+        TodoTaskDialog dialog = TodoTaskDialog.newEditInstance(task);
+        dialog.setListener(this);
+        dialog.show(getSupportFragmentManager(), "edit_todo_task");
     }
 
     private void showDeleteTodoConfirmationDialog(final TodoTask task) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("确认删除");
-        builder.setMessage("确定要删除这个待办事项吗？");
-
-        builder.setPositiveButton("删除", new DialogInterface.OnClickListener() {
+        ConfirmDeleteDialog dialog = ConfirmDeleteDialog.newInstance(
+                "确认删除",
+                "确定要删除这个待办事项吗？"
+        );
+        dialog.setListener(new ConfirmDeleteDialog.ConfirmDeleteListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onConfirmDelete() {
                 todoManager.deleteTask(task);
-                // 重新获取任务列表并更新适配器
                 todoTaskList = todoManager.getTodoTasks();
                 todoAdapter.updateData(todoTaskList);
             }
         });
-
-        builder.setNegativeButton("取消", null);
-        builder.show();
+        dialog.show(getSupportFragmentManager(), "delete_todo_task");
     }
 
     @Override
