@@ -3,15 +3,18 @@ package com.example.todolist.model;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DailyTask {
+public class DailyTask implements Serializable {
     private int id;
     private String content;
     private boolean completedToday;
     private String lastCompletedDate; // 记录最后完成日期
     private List<int[]> weeklyCompletion;
+    private static final long serialVersionUID = 1L;
 
     public DailyTask(int id, String content) {
         this.id = id;

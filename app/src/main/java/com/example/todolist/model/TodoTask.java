@@ -3,11 +3,14 @@ package com.example.todolist.model;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class TodoTask {
+import java.io.Serializable;
+
+public class TodoTask implements Serializable {
     private int id;
     private String content;
     private int priority; // 优先级，数值越小优先级越高
     private long createdTime;
+    private static final long serialVersionUID = 1L;
 
     public TodoTask(int id, String content) {
         this.id = id;
