@@ -144,10 +144,27 @@ public class DailyTask implements Serializable {
     // 周数据滚动（当新的一周开始时）
     public void rollWeeklyData() {
         if (weeklyCompletion.size() >= 10) {
-            // 移除最旧的一周
-            weeklyCompletion.remove(9);
-            // 在开头添加新的一周
-            weeklyCompletion.add(0, new int[7]);
+            // 移除最旧的一周（索引9，因为列表是0-9）
+            weeklyCompletion.remove(weeklyCompletion.size() - 1);
         }
+        // 在开头添加新的一周（全0数组）
+        weeklyCompletion.add(0, new int[7]);
+
+        // 重置今日完成状态
+        this.completedToday = false;
+    }
+
+    // 添加方法：获取指定周的完成情况（用于显示）
+    public int[] getWeekCompletion(int weekIndex) {
+        if (weekIndex >= 0 && weekIndex < weeklyCompletion.size()) {
+            return weeklyCompletion.get(weekIndex);
+        }
+        return new int[7]; // 返回空数组
+    }
+
+    // 添加方法：获取最近n周的完成统计
+    public List<int[]> getRecentWeeks(int weeksCount) {
+        int actualCount = Math.min(weeksCount, weeklyCompletion.size());
+        return weeklyCompletion.subList(0, actualCount);
     }
 }
