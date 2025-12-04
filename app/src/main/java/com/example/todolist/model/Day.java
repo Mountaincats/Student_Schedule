@@ -12,6 +12,9 @@ import java.util.Objects;
  * 表示一天：包含日期、周号、周几、活动时段、当天的行程列表、重复规则等。
  */
 public class Day {
+    // 数据库 ID，0 表示尚未存入数据库
+    private long databaseId = 0;
+    
     private LocalDate date;         // 创建天的日期（也可作为默认重复起始点）
     private int weekIndex;          // 所在周索引（可由外部 Week 管理）
     private DayOfWeek dayOfWeek;
@@ -40,6 +43,14 @@ public class Day {
         this.dayOfWeek = date.getDayOfWeek();
         this.isTemporaryDay = istemporaryDay;
         this.repeatRule = repeatRule;
+    }
+
+    public long getDatabaseId() {
+        return databaseId;
+    }
+
+    public void setDatabaseId(long databaseId) {
+        this.databaseId = databaseId;
     }
 
     public LocalDate getDate() {
@@ -90,6 +101,10 @@ public class Day {
     public boolean removeSchedule(Schedule s){
         return schedules.remove(s);
     }
+    
+    public void clearSchedules() {
+        schedules.clear();
+    }
 
     public RepeatRule getRepeatRule() {
         return repeatRule;
@@ -125,11 +140,17 @@ public class Day {
         if (o == null || getClass() != o.getClass()) return false;
 
         Day day = (Day) o;
-        return Objects.equals(date, day.date);
+        // 如果有数据库 ID，优先用 ID 判断是否为同一个对象
+        if (databaseId > 0 && day.databaseId > 0) {
+            return databaseId == day.databaseId;
+        }
+        // 否则根据创建日期和类型判断
+        return Objects.equals(date, day.date) && isTemporaryDay == day.isTemporaryDay;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(date);
+        // 保持和 equals 一致
+        return Objects.hash(date, isTemporaryDay);
     }
 }

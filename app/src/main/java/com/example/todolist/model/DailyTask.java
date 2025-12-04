@@ -3,15 +3,18 @@ package com.example.todolist.model;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DailyTask {
+public class DailyTask implements Serializable {
     private int id;
     private String content;
     private boolean completedToday;
     private String lastCompletedDate; // 记录最后完成日期
     private List<int[]> weeklyCompletion;
+    private static final long serialVersionUID = 1L;
 
     public DailyTask(int id, String content) {
         this.id = id;
@@ -72,10 +75,8 @@ public class DailyTask {
 
     // Getters and Setters
     public int getId() { return id; }
-    public void setId(int id) {
-        this.id = id;
-    }
-        public String getContent() { return content; }
+    public void setId(int id) { this.id = id; }
+    public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
     public boolean isCompletedToday() { return completedToday; }
     public void setCompletedToday(boolean completed) { this.completedToday = completed; }
@@ -94,6 +95,16 @@ public class DailyTask {
         }
     }
 
+    // 取消某天的完成记录
+    public void unmarkCompleted(int weekIndex, int dayOfWeek) {
+        if (weekIndex >= 0 && weekIndex < weeklyCompletion.size()) {
+            int[] week = weeklyCompletion.get(weekIndex);
+            if (dayOfWeek >= 0 && dayOfWeek < 7 && week[dayOfWeek] > 0) {
+                week[dayOfWeek]--;
+            }
+        }
+    }
+
     // 获取某周的完成次数
     public int getWeekCompletionCount(int weekIndex) {
         if (weekIndex >= 0 && weekIndex < weeklyCompletion.size()) {
@@ -103,6 +114,19 @@ public class DailyTask {
                 if (completion > 0) count++;
             }
             return count;
+        }
+        return 0;
+    }
+
+    // 获取某周的总完成次数（所有天完成次数的总和）
+    public int getWeekTotalCompletionCount(int weekIndex) {
+        if (weekIndex >= 0 && weekIndex < weeklyCompletion.size()) {
+            int[] week = weeklyCompletion.get(weekIndex);
+            int total = 0;
+            for (int completion : week) {
+                total += completion;
+            }
+            return total;
         }
         return 0;
     }
@@ -120,10 +144,27 @@ public class DailyTask {
     // 周数据滚动（当新的一周开始时）
     public void rollWeeklyData() {
         if (weeklyCompletion.size() >= 10) {
-            // 移除最旧的一周
-            weeklyCompletion.remove(9);
-            // 在开头添加新的一周
-            weeklyCompletion.add(0, new int[7]);
+            // 移除最旧的一周（索引9，因为列表是0-9）
+            weeklyCompletion.remove(weeklyCompletion.size() - 1);
         }
+        // 在开头添加新的一周（全0数组）
+        weeklyCompletion.add(0, new int[7]);
+
+        // 重置今日完成状态
+        this.completedToday = false;
+    }
+
+    // 添加方法：获取指定周的完成情况（用于显示）
+    public int[] getWeekCompletion(int weekIndex) {
+        if (weekIndex >= 0 && weekIndex < weeklyCompletion.size()) {
+            return weeklyCompletion.get(weekIndex);
+        }
+        return new int[7]; // 返回空数组
+    }
+
+    // 添加方法：获取最近n周的完成统计
+    public List<int[]> getRecentWeeks(int weeksCount) {
+        int actualCount = Math.min(weeksCount, weeklyCompletion.size());
+        return weeklyCompletion.subList(0, actualCount);
     }
 }

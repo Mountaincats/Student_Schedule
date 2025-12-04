@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="@android:color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp">
+
+        <!-- 标题 -->
+        <TextView
+            android:id="@+id/tvNoteTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="编辑备注"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- 提示文本 -->
+        <TextView
+            android:id="@+id/tvNoteHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="第一行为标题，其余为内容"
+            android:textSize="12sp"
+            android:textColor="#757575"
+            android:layout_marginTop="4dp"
+            app:layout_constraintTop_toBottomOf="@id/tvNoteTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- 备注输入框 (替换为普通 EditText) -->
+        <EditText
+            android:id="@+id/etNoteContent"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="16dp"
+            android:hint="请输入备注"
+            android:background="@android:drawable/edit_text"
+            android:gravity="top|start"
+            android:inputType="textMultiLine"
+            android:minLines="5"
+            android:padding="12dp"
+            app:layout_constraintTop_toBottomOf="@id/tvNoteHint" />
+
+        <!-- 底部按钮区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/etNoteContent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <!-- 保存按钮 -->
+            <Button
+                android:id="@+id/btnSaveNote"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="保存"
+                android:textSize="16sp"
+                android:textColor="@android:color/white"
+                app:backgroundTint="#6200EE"
+                android:layout_marginEnd="8dp"
+                android:stateListAnimator="@null"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"/>
+
+            <!-- 取消按钮 -->
+            <Button
+                android:id="@+id/btnCancelNote"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="取消"
+                android:textSize="16sp"
+                android:textColor="#212121"
+                app:backgroundTint="#E0E0E0"
+                android:layout_marginStart="8dp"
+                android:stateListAnimator="@null"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"/>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
