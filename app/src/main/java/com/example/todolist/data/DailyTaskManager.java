@@ -11,7 +11,6 @@ import java.util.Locale;
 public class DailyTaskManager {
     private DailyTaskDao dailyTaskDao;
     private List<DailyTask> dailyTaskList;
-//    private int taskIdCounter = 0; // 不再需要，因为数据库使用自增ID
 
     public DailyTaskManager(Context context) {
         dailyTaskDao = new DailyTaskDao(context);
@@ -88,18 +87,21 @@ public class DailyTaskManager {
         return -1;
     }
 
-    // 标记任务完成
+    // 标记任务完成或取消完成
     public void markTaskCompleted(DailyTask task, boolean completed) {
         task.setCompletedToday(completed);
+
+        Calendar calendar = Calendar.getInstance();
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1; // 周日=0, 周一=1, ...
 
         if (completed) {
             // 设置完成日期
             task.setLastCompletedDate(getCurrentDate());
-
             // 记录到当前周
-            Calendar calendar = Calendar.getInstance();
-            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1; // 周日=0, 周一=1, ...
             task.markCompleted(0, dayOfWeek);
+        } else {
+            // 取消完成：清除当天的完成记录
+            task.unmarkCompleted(0, dayOfWeek);
         }
 
         updateTask(task);
