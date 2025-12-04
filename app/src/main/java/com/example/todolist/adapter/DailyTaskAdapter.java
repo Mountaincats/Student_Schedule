@@ -107,6 +107,21 @@ public class DailyTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 if (listener != null) {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION && position < taskList.size()) {
+                        // 先取消监听，防止重复触发
+                        completionCheckbox.setOnCheckedChangeListener(null);
+                        // 设置新的状态
+                        completionCheckbox.setChecked(isChecked);
+                        // 重新设置监听
+                        completionCheckbox.setOnCheckedChangeListener((buttonView2, isChecked2) -> {
+                            if (listener != null) {
+                                int pos = getAdapterPosition();
+                                if (pos != RecyclerView.NO_POSITION && pos < taskList.size()) {
+                                    listener.onTaskCompleteClick(taskList.get(pos), isChecked2);
+                                }
+                            }
+                        });
+
+                        // 通知监听器
                         listener.onTaskCompleteClick(taskList.get(position), isChecked);
                     }
                 }
@@ -124,7 +139,19 @@ public class DailyTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         void bind(DailyTask task) {
             taskContent.setText(task.getContent());
+            // 先取消监听，防止触发
+            completionCheckbox.setOnCheckedChangeListener(null);
             completionCheckbox.setChecked(task.isCompletedToday());
+            // 重新设置监听
+            completionCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (listener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION && position < taskList.size()) {
+                        listener.onTaskCompleteClick(taskList.get(position), isChecked);
+                    }
+                }
+            });
+
             updateWeekIndicators(task);
         }
 
@@ -133,7 +160,8 @@ public class DailyTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             for (int i = 0; i < 10; i++) {
                 View weekView = new View(itemView.getContext());
-                int completionCount = task.getWeekCompletionCount(i);
+                // 使用总完成次数来计算颜色深度
+                int totalCompletionCount = task.getWeekTotalCompletionCount(i);
 
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                         0, // width will be set by weight
@@ -143,24 +171,25 @@ public class DailyTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 params.setMargins(2, 0, 2, 0);
                 weekView.setLayoutParams(params);
 
-                // 根据完成次数设置颜色深度
-                int color = getColorForCompletion(completionCount);
+                // 根据总完成次数设置颜色深度
+                int color = getColorForCompletion(totalCompletionCount);
                 weekView.setBackgroundColor(color);
 
                 weekIndicatorLayout.addView(weekView);
             }
         }
 
-        private int getColorForCompletion(int completionCount) {
+        private int getColorForCompletion(int totalCompletionCount) {
             int baseColor = 0xFF2196F3; // 蓝色基础色
-            int alpha = Math.min(255, 50 + completionCount * 20); // 根据完成次数调整透明度
+            // 根据总完成次数调整透明度，最多255
+            int alpha = Math.min(255, 50 + totalCompletionCount * 20);
             return (alpha << 24) | (baseColor & 0x00FFFFFF);
         }
     }
 
     public interface OnTaskClickListener {
         void onAddTaskClick();
-        void onEditTaskClick(DailyTask task); // 新增：编辑任务
+        void onEditTaskClick(DailyTask task);
         void onTaskCompleteClick(DailyTask task, boolean completed);
         void onTaskDeleteClick(DailyTask task);
     }

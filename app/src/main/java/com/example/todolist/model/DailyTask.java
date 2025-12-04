@@ -75,9 +75,7 @@ public class DailyTask implements Serializable {
 
     // Getters and Setters
     public int getId() { return id; }
-    public void setId(int id) {
-        this.id = id;
-    }
+    public void setId(int id) { this.id = id; }
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
     public boolean isCompletedToday() { return completedToday; }
@@ -97,6 +95,16 @@ public class DailyTask implements Serializable {
         }
     }
 
+    // 取消某天的完成记录
+    public void unmarkCompleted(int weekIndex, int dayOfWeek) {
+        if (weekIndex >= 0 && weekIndex < weeklyCompletion.size()) {
+            int[] week = weeklyCompletion.get(weekIndex);
+            if (dayOfWeek >= 0 && dayOfWeek < 7 && week[dayOfWeek] > 0) {
+                week[dayOfWeek]--;
+            }
+        }
+    }
+
     // 获取某周的完成次数
     public int getWeekCompletionCount(int weekIndex) {
         if (weekIndex >= 0 && weekIndex < weeklyCompletion.size()) {
@@ -106,6 +114,19 @@ public class DailyTask implements Serializable {
                 if (completion > 0) count++;
             }
             return count;
+        }
+        return 0;
+    }
+
+    // 获取某周的总完成次数（所有天完成次数的总和）
+    public int getWeekTotalCompletionCount(int weekIndex) {
+        if (weekIndex >= 0 && weekIndex < weeklyCompletion.size()) {
+            int[] week = weeklyCompletion.get(weekIndex);
+            int total = 0;
+            for (int completion : week) {
+                total += completion;
+            }
+            return total;
         }
         return 0;
     }
