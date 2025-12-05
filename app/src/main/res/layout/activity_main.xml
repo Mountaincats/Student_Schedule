@@ -90,6 +90,21 @@
 
                 android:textAllCaps="false" />
 
+            <!-- 更多功能页签 -->
+            <Button
+                android:id="@+id/btnOther"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+
+                android:background="@drawable/button_selector"
+                android:gravity="center|center"
+                android:lines="4"
+                android:minHeight="0dp"
+                android:singleLine="false"
+                android:text="@string/other"
+
+                android:textAllCaps="false" />
+
         </LinearLayout>
 
         <!-- 右侧内容区域 -->

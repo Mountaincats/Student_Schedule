@@ -13,6 +13,7 @@
     <string name="schedule">学\n生\n课\n表</string>
     <string name="todo">待\n办\n任\n务</string>
     <string name="daily">每\n日\n任\n务</string>
+    <string name="other">其\n他\n功\n能</string>
 
     <!-- 设置界面字符串 -->
     <string name="app_settings">应用设置</string>
@@ -36,6 +37,9 @@
 
     <string name="daily_feature">每日任务</string>
 
+    <!--其他功能界面字符串 -->
+    <string name="what_to_eat">今天吃什么呢</string>
+
     <!-- 待办事项编辑相关字符串 -->
     <string name="edit_todo_task">编辑待办事项</string>
     <string name="save">保存</string>
@@ -44,4 +48,5 @@
     <!-- 每日任务编辑相关字符串 -->
     <string name="edit_daily_task">编辑每日任务</string>
     <string name="daily_task_hint">请输入任务内容</string>
+
 </resources>
