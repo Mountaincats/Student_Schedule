@@ -27,7 +27,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.OnTaskClickListener, TodoAdapter.OnTodoTaskClickListener {
     private ImageButton btnSettings;
-    private Button btnSchedule, btnTodo, btnDaily;
+    private Button btnSchedule, btnTodo, btnDaily, btnOther;
     private FrameLayout contentFrame;
     private Toolbar toolbar;
 
@@ -76,6 +76,8 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
         btnTodo = findViewById(R.id.btnTodo);
         btnDaily = findViewById(R.id.btnDaily);
         contentFrame = findViewById(R.id.contentFrame);
+        // 新增：初始化“其他功能”按钮
+        btnOther = findViewById(R.id.btnOther);
     }
 
     private void setupClickListeners() {
@@ -112,6 +114,15 @@ public class MainActivity extends AppCompatActivity implements DailyTaskAdapter.
                 if (!v.isSelected()) {
                     showDailyView();
                 }
+            }
+        });
+
+        // 新增：“其他功能”按钮的跳转逻辑
+        btnOther.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, OtherFeaturesActivity.class);
+                startActivity(intent);
             }
         });
     }
