@@ -12,6 +12,9 @@ import java.util.Locale;
 
 public class DailyTaskManager {
     private static final String PREF_NAME = "DailyTaskPrefs";
+    private static final String KEY_LAST_CHECKED_DATE = "last_checked_date"; // 改为记录最后检查日期
+    private static final String KEY_LAST_WEEK_NUMBER = "last_week_number";
+    private static final String KEY_LAST_YEAR = "last_year";
     private static final String KEY_LAST_CHECKED_WEEK = "last_checked_week";
     private static final String KEY_LAST_CHECKED_YEAR = "last_checked_year";
 
@@ -55,19 +58,42 @@ public class DailyTaskManager {
     private void checkAndRollWeeklyData() {
         int currentWeek = getCurrentWeekNumber();
         int currentYear = getCurrentYear();
+        String today = getCurrentDate();
 
-        int lastCheckedWeek = sharedPreferences.getInt(KEY_LAST_CHECKED_WEEK, -1);
-        int lastCheckedYear = sharedPreferences.getInt(KEY_LAST_CHECKED_YEAR, -1);
+        int lastWeek = sharedPreferences.getInt(KEY_LAST_WEEK_NUMBER, -1);
+        int lastYear = sharedPreferences.getInt(KEY_LAST_YEAR, -1);
+        String lastCheckedDate = sharedPreferences.getString(KEY_LAST_CHECKED_DATE, "");
 
-        // 如果是新的一周（考虑跨年情况）
-        if (lastCheckedWeek == -1 || lastCheckedYear == -1) {
-            // 第一次运行，只保存当前周数
-            saveCurrentWeekInfo(currentWeek, currentYear);
-        } else if (currentYear > lastCheckedYear ||
-                (currentYear == lastCheckedYear && currentWeek > lastCheckedWeek)) {
-            // 检测到新的一周，执行周数据滚动
-            rollAllTasksWeeklyData();
-            saveCurrentWeekInfo(currentWeek, currentYear);
+        // 如果上次检查不是今天，才需要检查周滚动
+        if (!today.equals(lastCheckedDate)) {
+            // 保存今天的检查日期
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(KEY_LAST_CHECKED_DATE, today);
+            editor.apply();
+
+            // 如果是新的一周（考虑跨年情况）
+            boolean isNewWeek = (currentYear > lastYear) ||
+                    (currentYear == lastYear && currentWeek > lastWeek);
+
+            if (isNewWeek) {
+                // 对所有任务执行周数据滚动
+                for (DailyTask task : dailyTaskList) {
+                    task.rollWeeklyData();
+                    dailyTaskDao.updateTask(task);
+                }
+
+                // 保存当前周和年份
+                SharedPreferences.Editor editor2 = sharedPreferences.edit();
+                editor2.putInt(KEY_LAST_WEEK_NUMBER, currentWeek);
+                editor2.putInt(KEY_LAST_YEAR, currentYear);
+                editor2.apply();
+            } else if (lastWeek == -1 || lastYear == -1) {
+                // 第一次运行，保存当前周和年份
+                SharedPreferences.Editor editor2 = sharedPreferences.edit();
+                editor2.putInt(KEY_LAST_WEEK_NUMBER, currentWeek);
+                editor2.putInt(KEY_LAST_YEAR, currentYear);
+                editor2.apply();
+            }
         }
     }
 
@@ -135,6 +161,9 @@ public class DailyTaskManager {
 
     // 标记任务完成或取消完成
     public void markTaskCompleted(DailyTask task, boolean completed) {
+        // 先检查是否需要滚动周数据
+        checkAndRollWeeklyData();
+
         task.setCompletedToday(completed);
 
         Calendar calendar = Calendar.getInstance();
@@ -143,7 +172,7 @@ public class DailyTaskManager {
         if (completed) {
             // 设置完成日期
             task.setLastCompletedDate(getCurrentDate());
-            // 记录到当前周
+            // 记录到当前周（第0周）
             task.markCompleted(0, dayOfWeek);
         } else {
             // 取消完成：清除当天的完成记录
