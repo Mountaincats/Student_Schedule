@@ -2,6 +2,7 @@ package com.example.todolist;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,11 +21,11 @@ public class OtherFeaturesActivity extends AppCompatActivity {
 
     private final String[] foods = {"牛堡", "寿司", "麻辣烫", "披萨", "粉面", "粥点",
             "盒饭", "KFC", "麦", "烤盘饭", "西餐", "手抓饼", "螺蛳粉", "黄焖鸡米饭", "烤肉饭", "饺子",
-            "馄饨", "米线", "盖浇饭", "炸鸡架", "手抓饼", "凉皮", "肉夹馍", "花甲粉", "冒菜", "烤鱼",
+            "馄饨", "米线", "盖浇饭", "炸鸡架", "凉皮", "肉夹馍", "花甲粉", "冒菜", "烤鱼",
             "火锅", "串串香", "拌面", "蛋炒饭", "煲仔饭", "卤肉饭", "意面"};
     private AlertDialog foodDialog;
     private TextView tvFoodResult;
-    private final Handler handler = new Handler();
+    private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable randomRunnable;
 
     @Override
@@ -97,7 +98,11 @@ public class OtherFeaturesActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (handler != null && randomRunnable != null) {
-            handler.removeCallbacks(randomRunnable);
+            handler.removeCallbacksAndMessages(null); // 移除所有Handler任务（比removeCallbacks更彻底）
+        }
+        if (foodDialog != null && foodDialog.isShowing()) {
+            foodDialog.dismiss(); // 主动关闭弹窗
+            foodDialog = null;
         }
     }
 }
