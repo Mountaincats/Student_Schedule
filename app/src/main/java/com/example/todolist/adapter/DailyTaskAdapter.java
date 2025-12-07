@@ -160,7 +160,6 @@ public class DailyTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             for (int i = 0; i < 10; i++) {
                 View weekView = new View(itemView.getContext());
-                // 使用总完成次数来计算颜色深度
                 int totalCompletionCount = task.getWeekTotalCompletionCount(i);
 
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -171,7 +170,7 @@ public class DailyTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 params.setMargins(2, 0, 2, 0);
                 weekView.setLayoutParams(params);
 
-                // 根据总完成次数设置颜色深度
+                // 根据完成次数设置颜色
                 int color = getColorForCompletion(totalCompletionCount);
                 weekView.setBackgroundColor(color);
 
@@ -179,11 +178,80 @@ public class DailyTaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
         }
 
+        /**
+         * 根据完成次数返回不同的颜色
+         * 0次: 灰色 (#E0E0E0)
+         * 1-3次: 蓝色渐变，从浅蓝到深蓝
+         * 4-6次: 绿色渐变，从浅绿到深绿
+         * 7次及以上: 金色
+         */
         private int getColorForCompletion(int totalCompletionCount) {
-            int baseColor = 0xFF2196F3; // 蓝色基础色
-            // 根据总完成次数调整透明度，最多255
-            int alpha = Math.min(255, 50 + totalCompletionCount * 20);
-            return (alpha << 24) | (baseColor & 0x00FFFFFF);
+            if (totalCompletionCount <= 0) {
+                return 0xFFE0E0E0; // 灰色
+            } else if (totalCompletionCount <= 3) {
+                // 蓝色渐变：1-3次
+                return getBlueColorForCount(totalCompletionCount, 3);
+            } else if (totalCompletionCount <= 6) {
+                // 绿色渐变：4-6次
+                return getGreenColorForCount(totalCompletionCount, 3, 6);
+            } else {
+                return 0xFFFFD700; // 金色
+            }
+        }
+
+        /**
+         * 获取蓝色渐变颜色
+         * @param count 当前完成次数
+         * @param maxCount 最大次数
+         */
+        private int getBlueColorForCount(int count, int maxCount) {
+            // 蓝色基础颜色：从浅蓝(0xFF81D4FA)到深蓝(0xFF1976D2)
+            float ratio = (float) count / maxCount;
+
+            int startColor = 0xFF81D4FA; // 浅蓝色
+            int endColor = 0xFF1976D2;   // 深蓝色
+
+            int startRed = (startColor >> 16) & 0xFF;
+            int startGreen = (startColor >> 8) & 0xFF;
+            int startBlue = startColor & 0xFF;
+
+            int endRed = (endColor >> 16) & 0xFF;
+            int endGreen = (endColor >> 8) & 0xFF;
+            int endBlue = endColor & 0xFF;
+
+            int red = (int) (startRed + (endRed - startRed) * ratio);
+            int green = (int) (startGreen + (endGreen - startGreen) * ratio);
+            int blue = (int) (startBlue + (endBlue - startBlue) * ratio);
+
+            return 0xFF000000 | (red << 16) | (green << 8) | blue;
+        }
+
+        /**
+         * 获取绿色渐变颜色
+         * @param count 当前完成次数
+         * @param minCount 最小次数
+         * @param maxCount 最大次数
+         */
+        private int getGreenColorForCount(int count, int minCount, int maxCount) {
+            // 绿色基础颜色：从浅绿(0xFFA5D6A7)到深绿(0xFF2E7D32)
+            float ratio = (float) (count - minCount) / (maxCount - minCount);
+
+            int startColor = 0xFFA5D6A7; // 浅绿色
+            int endColor = 0xFF2E7D32;   // 深绿色
+
+            int startRed = (startColor >> 16) & 0xFF;
+            int startGreen = (startColor >> 8) & 0xFF;
+            int startBlue = startColor & 0xFF;
+
+            int endRed = (endColor >> 16) & 0xFF;
+            int endGreen = (endColor >> 8) & 0xFF;
+            int endBlue = endColor & 0xFF;
+
+            int red = (int) (startRed + (endRed - startRed) * ratio);
+            int green = (int) (startGreen + (endGreen - startGreen) * ratio);
+            int blue = (int) (startBlue + (endBlue - startBlue) * ratio);
+
+            return 0xFF000000 | (red << 16) | (green << 8) | blue;
         }
     }
 
