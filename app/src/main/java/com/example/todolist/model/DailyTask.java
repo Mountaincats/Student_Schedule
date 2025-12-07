@@ -106,17 +106,17 @@ public class DailyTask implements Serializable {
     }
 
     // 获取某周的完成次数
-    public int getWeekCompletionCount(int weekIndex) {
-        if (weekIndex >= 0 && weekIndex < weeklyCompletion.size()) {
-            int[] week = weeklyCompletion.get(weekIndex);
-            int count = 0;
-            for (int completion : week) {
-                if (completion > 0) count++;
-            }
-            return count;
-        }
-        return 0;
-    }
+//    public int getWeekCompletionCount(int weekIndex) {
+//        if (weekIndex >= 0 && weekIndex < weeklyCompletion.size()) {
+//            int[] week = weeklyCompletion.get(weekIndex);
+//            int count = 0;
+//            for (int completion : week) {
+//                if (completion > 0) count++;
+//            }
+//            return count;
+//        }
+//        return 0;
+//    }
 
     // 获取某周的总完成次数（所有天完成次数的总和）
     public int getWeekTotalCompletionCount(int weekIndex) {
@@ -143,15 +143,24 @@ public class DailyTask implements Serializable {
 
     // 周数据滚动（当新的一周开始时）
     public void rollWeeklyData() {
-        if (weeklyCompletion.size() >= 10) {
-            // 移除最旧的一周（索引9，因为列表是0-9）
-            weeklyCompletion.remove(weeklyCompletion.size() - 1);
+        if (weeklyCompletion == null) {
+            weeklyCompletion = new ArrayList<>();
         }
-        // 在开头添加新的一周（全0数组）
-        weeklyCompletion.add(0, new int[7]);
 
-        // 重置今日完成状态
-        this.completedToday = false;
+        // 确保有10周的数据
+        while (weeklyCompletion.size() < 10) {
+            weeklyCompletion.add(new int[7]);
+        }
+
+        if (weeklyCompletion.size() >= 10) {
+            // 在开头添加新的一周
+            weeklyCompletion.add(0, new int[7]);
+
+            // 如果超过10周，移除最旧的一周
+            if (weeklyCompletion.size() > 10) {
+                weeklyCompletion.remove(weeklyCompletion.size() - 1);
+            }
+        }
     }
 
     // 添加方法：获取指定周的完成情况（用于显示）
